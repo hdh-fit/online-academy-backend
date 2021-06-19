@@ -3,11 +3,15 @@ const morgan = require('morgan')
 require('express-async-errors');
 const cors = require('cors');
 
+courseRoute = require('./routes/course.route')
+
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
+
+app.use('/api/v1/course', courseRoute);
 
 app.get('/err', (req, res) => {
     throw new Error('Error');
