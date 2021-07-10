@@ -7,7 +7,21 @@ router.get('/',
     async (req, res) => {
         const list = await coursemodel.getall();
 
-        res.json(list);
+        res.status(200).json(list);
+    })
+
+router.get('/top-10-view', 
+    async (req, res)  => {
+        const course = await coursemodel.getTop10View();
+    
+        res.status(200).json(course);
+    })
+
+router.get('/top-10-date-create', 
+    async (req, res)  => {
+        const course = await coursemodel.getTop10DayCreate();
+    
+        res.status(200).json(course);
     })
 
 router.get('/:id', 
@@ -17,7 +31,7 @@ router.get('/:id',
 
         if (course == null) return res.status(204).end();
 
-        res.json(course);
+        res.status(200).json(course);
     })
 
 router.delete('/:id', 

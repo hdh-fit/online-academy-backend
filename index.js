@@ -3,7 +3,8 @@ const morgan = require('morgan')
 require('express-async-errors');
 const cors = require('cors');
 
-courseRoute = require('./routes/course.route')
+const courseRoute = require('./routes/course.route');
+const userRoute = require('./routes/user.route');
 
 const app = express();
 
@@ -12,6 +13,7 @@ app.use(express.json());
 app.use(morgan('dev'));
 
 app.use('/api/v1/course', courseRoute);
+app.use('/api/v1/user', userRoute);
 
 app.get('/err', (req, res) => {
     throw new Error('Error');
