@@ -57,4 +57,12 @@ router.put('/updatepassword',
 
         res.status(204).end();
     })
+
+const bcrypt = require('bcryptjs');
+
+router.get('/', async function (req, res) {
+  const user = {ten:"Duy",ho:"Vu"}
+  res.status(201).json(user);
+})
+
 module.exports = router;

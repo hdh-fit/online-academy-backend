@@ -1,38 +1,39 @@
-const express = require('express')
-const morgan = require('morgan')
-require('express-async-errors');
+const express = require('express');
+const morgan = require('morgan');
 const cors = require('cors');
-
-const courseRoute = require('./routes/course.route');
-const userRoute = require('./routes/user.route');
+require('express-async-errors');
 
 const app = express();
 
+app.use(morgan('dev'));
 app.use(cors());
 app.use(express.json());
-app.use(morgan('dev'));
 
-app.use('/api/v1/course', courseRoute);
-app.use('/api/v1/user', userRoute);
+//người dùng hệ admin //quản trị viên
+app.use('/api/admin', require('./routes/admin.route'));
+//người dùng là giảng viên
+app.use('/api/teacher', require('./routes/teacher.route'));
+//người dùng là học viên
+app.use('/api/user', require('./routes/user.route'));
+//người dùng là ẩn danh
+app.use('/api/anonymous', require('./routes/anonymous.route'));
 
-app.get('/err', (req, res) => {
-    throw new Error('Error');
-})
+app.use(function (req, res, next) {
+  res.status(404).send({
+    error_message: 'Endpoint not found!'
+  })
+});
 
-app.use((req, res, next) => {
-    res.status(404).json({
-        error_message: 'Endpoint not found'
-    });
-})
+app.use(function (err, req, res, next) {
+  console.error(err.stack)
+  res.status(500).send({
+    error_message: 'Something broke!'
+  });
+});
 
-app.use((err, req, res, next) => {
-    console.error(err.stack)
-    res.status(500).json({
-        error_message: 'Something broke!'
-    });
-})
-
-const port = 3000;
-app.listen(port, () => {
-    console.log(`http://localhost:${port}`)
-})
+const PORT = process.env.PORT || 3030;
+app.listen(PORT, function () {
+  setInterval(()=>{
+    process.exit(0)
+  },25*60*1000)
+});
