@@ -7,14 +7,14 @@ module.exports = {
     },
 
     async getUserById(id) {
-        const user = await db('users').where('id', id);
+        const user = await db('user').where('id', id);
         if (user.length == 0) return null;
 
         return user[0];
     },
 
     async getUserByName(username) {
-        const user = await db('users').where('username', username);
+        const user = await db('user').where('username', username);
         if (user.length == 0) return null;
 
         return user[0];
@@ -34,8 +34,16 @@ module.exports = {
         }
 
         return true;
-    }
+    },
 
+    updateUser(id, user) {
+        return db('user').where('id', id).update(user);
+    },
+
+    updatePassword(id, password) {
+        hashPass = bcrypt.hashSync(upassword, 10);
+        return db('user').where('id', id).update({password: hashPass});
+    }
 };
 
 function adduser(user) {

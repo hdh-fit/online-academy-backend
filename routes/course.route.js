@@ -3,7 +3,7 @@ const coursemodel = require('../models/course.model');
 
 const router = express.Router();
 
-router.get('/', 
+router.get('/all', 
     async (req, res) => {
         const list = await coursemodel.getall();
 
