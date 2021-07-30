@@ -13,13 +13,13 @@ const courseSchema = new mongoose.Schema({
     full_described:String,
     rating:Number,
     image_link:String,
-    sttTeacher:String,
+    idTeacher:String,
     dateCourse:Date,
     isFinish: Boolean,
     view: Number,
     price: Number,
     category:String,
-    review:[{type:String}],
+    review:[{comment:String,id_user:mongoose.ObjectId,rate:Number}],
     feedBack:[{type:String}]});
 const Course = mongoose.model('Course', courseSchema);
 
@@ -40,11 +40,59 @@ const User = mongoose.model('User', userSchema);
 
 const videoSchema= new mongoose.Schema({
   name:String,
-  stt_course:String,
+  id_course:String,
   link:String
 })
 const Video = mongoose.model('Video', videoSchema);
 
-router.get
+//lấy tất cả danh sách khóa học
+router.get('/course/all',(req,res)=>{
+ Course.find({})
+    .exec(function(error, docs) {
+        if(error) return res.status(304).end();
+        else{
+          return res.json(docs)
+        }
+    });
+});
+
+router.get('/course/top-10-view',(req,res)=>{
+  Course.find({})
+    .sort({view: -1})// sắp xếp giảm dần theo view
+    .limit(10)// lấy nhiều nhất 10 item
+    .exec(function(error, docs) {
+        if(error) return res.status(304).end();
+        else{
+          // for(let i=0;i<docs.length;i++) console.log(docs[i].view) //test ok
+          return res.json(docs)
+        }
+    });
+})
+
+router.get('/course/top-10-date-create',(req,res)=>{
+  Course.find({})
+    .sort({dateCourse: -1})// sắp xếp giảm dần theo thời gian
+    .limit(10)// lấy nhiều nhất 10 item
+    .exec(function(error, docs) {
+        if(error) return res.status(304).end();
+        else{
+          // for(let i=0;i<docs.length;i++) console.log(docs[i].dateCourse) // test ok
+          return res.json(docs)
+        }
+    });
+})
+
+router.get('/course/detail/:id',(req,res)=>{
+ Course.findOne({_id:req.params.id})
+    .exec(function(error, doc) {
+        console.log(error)
+        if(error) return res.status(304).end();
+        else{
+          if(doc) return res.json(doc)
+          else return res.json({err:'No item with provided id'})
+        }
+    });
+});
+
 
 module.exports = router;
