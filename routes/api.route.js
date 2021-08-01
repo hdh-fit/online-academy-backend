@@ -1,6 +1,9 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const router = express.Router();
+const { valid } = require('../middlewares/vilidate.mdw');
+const validUserSchema = require('../schemas/user.json');
+const jwt = require('jsonwebtoken');
 
 //connect to mongodb
 let mongoose=require('mongoose');
@@ -93,6 +96,65 @@ router.get('/course/detail/:id',(req,res)=>{
         }
     });
 });
+
+router.post('/user/register', valid(validUserSchema), (req,res)=>{
+  const newuser = new User(req.body);
+  User.findOne({username: newuser.username})
+    .exec(function(error, doc) {
+        console.log(error)
+        if(error) return res.status(304).end();
+        else{
+          if(doc) return res.json({err:'User already exists'})
+          else {
+            newuser.password = bcrypt.hashSync(newuser.password, 10);
+            newuser.save();
+            res.json(newuser);
+          }
+        }
+    });
+});
+
+router.post('/user/login', (req,res)=>{
+  const user = req.body;
+  User.findOne({username: user.username})
+    .exec(function(error, doc) {
+        console.log(error)
+        if(error) return res.status(304).end();
+        else {
+          if (doc) {
+            if (user.type !== doc.type) {
+              return res.json({
+                authenticated: false
+              });
+            }
+
+            if (!bcrypt.compareSync(user.password, doc.password)){
+              return res.json({
+                  authenticated: false
+              });
+            }
+
+            const payload = {
+              userid: doc.id,
+              type: doc.type
+            }
+    
+            const opts = {
+                expiresIn: 36000
+            }
+    
+            const accessToken = jwt.sign(payload, 'WEDNC2021', opts);
+            
+            return res.json({
+                authenticated: true,
+                accessToken: accessToken
+            });
+          }
+          else return res.json({err:'User not exists'})
+        }
+    });
+});
+
 
 
 module.exports = router;

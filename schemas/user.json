@@ -1,0 +1,40 @@
+{
+    "type": "object",
+    "required": [
+      "fullname",
+      "username",
+      "password",
+      "phone",
+      "type",
+      "gender",
+      "dob",
+      "email"
+    ],
+    "additionalProperties": true,
+    "properties": {
+      "fullname": {
+        "type": "string"
+      },
+      "username": {
+        "type": "string"
+      },
+      "password": {
+        "type": "string"
+      },
+      "phone": {
+        "type": "string"
+      },
+      "type": {
+        "type": "number"
+      },
+      "gender": {
+        "type": "string"
+      },
+      "dob": {
+        "type": "string"
+      },
+      "email": {
+        "type": "string"
+      }
+    }
+  }

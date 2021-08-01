@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/hdh-fit/online-academy-backend#readme",
   "dependencies": {
+    "ajv": "^8.6.2",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "express": "^4.17.1",
