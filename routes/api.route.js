@@ -85,15 +85,41 @@ router.get('/course/top-10-date-create',(req,res)=>{
     });
 })
 
-router.get('/course/detail/:id',(req,res)=>{
- Course.findOne({_id:req.params.id})
-    .exec(function(error, doc) {
-        console.log(error)
-        if(error) return res.status(304).end();
-        else{
-          if(doc) return res.json(doc)
-          else return res.json({err:'No item with provided id'})
+
+router.get('/course/detail/:id', (req, res) => {
+  Course.findOne({ _id: req.params.id })
+     .lean()
+    .exec(function (error, doc) {
+      if (error) return res.status(304).end();
+      else {
+        if (doc) {
+          //tim video voi course do
+          Video.find({ id_course: doc._id }, (err, videos) => {
+            doc.video = videos;
+            //tim User đã comment 
+            let arrUserComment = [];
+            for (let i = 0; i < doc.review.length; i++) {
+              arrUserComment.push(doc.review[i].id_user);
+            }
+            User.find({
+              '_id': {
+                $in: arrUserComment
+              }
+            }).lean().exec(function (err, UsersComment) {
+              for (let i = 0; i < doc.review.length; i++) {
+                for (let j = 0; j < UsersComment.length; j++) {
+                  if (doc.review[i].id_user.equals(UsersComment[j]._id)) {
+                    doc.review[i].fullname = UsersComment[j].fullname;
+                    break;
+                  }
+                }
+              }
+              res.json(doc)
+            });
+          })
         }
+        else return res.json({ err: 'No item with provided id' })
+      }
     });
 });
 
