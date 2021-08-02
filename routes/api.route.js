@@ -4,6 +4,7 @@ const router = express.Router();
 const { valid } = require('../middlewares/vilidate.mdw');
 const validUserSchema = require('../schemas/user.json');
 const jwt = require('jsonwebtoken');
+const authMiddewares =  require('../middlewares/auth.mdw');
 
 //connect to mongodb
 let mongoose=require('mongoose');
@@ -161,7 +162,7 @@ router.post('/user/login', (req,res)=>{
             }
 
             const payload = {
-              userid: doc.id,
+              id: doc.id,
               type: doc.type
             }
     
@@ -181,6 +182,38 @@ router.post('/user/login', (req,res)=>{
     });
 });
 
+router.get('/user/info', authMiddewares, (req,res)=>{
+  User.findOne({_id:req.user.id})
+     .exec(function(error, doc) {
+         console.log(error)
+         if(error) return res.status(304).end();
+         else{
+           if(doc) return res.json(doc);
+           else return res.json({err:'User not exists'});
+         }
+     });
+});
 
+router.put('/user/info', authMiddewares, (req,res)=>{
+  User.findOne({_id:req.user.id})
+     .exec(function(error, doc) {
+         console.log(error)
+         if(error) return res.status(304).end();
+         else{
+           if(doc) {
+             doc.fullname = req.body.fullname; 
+             doc.phone = req.body.phone;
+             doc.gender = req.body.gender;
+             doc.dob = req.body.dob;
+             doc.describe = req.body.describe;
+             doc.level = req.body.level;
+             doc.email = req.body.email;
+             doc.save();
+             return res.json(doc);
+           }
+           else return res.json({err:'User not exists'});
+         }
+     });
+});
 
 module.exports = router;
