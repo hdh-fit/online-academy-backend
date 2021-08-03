@@ -216,4 +216,29 @@ router.put('/user/info', authMiddewares, (req,res)=>{
      });
 });
 
+router.put('/user/password', authMiddewares, (req,res)=>{
+  User.findOne({_id:req.user.id})
+     .exec(function(error, doc) {
+         console.log(error)
+         if(error) return res.status(304).end();
+         else{
+           if(doc) {
+
+            if (!bcrypt.compareSync(req.body.password, doc.password)){
+              return res.json({
+                  message: "Incorrect password"
+              });
+            }
+
+            doc.password = bcrypt.hashSync(req.body.newpassword, 10);
+            doc.save();
+            return res.json({
+              message: "Change password successfully"
+            });
+           }
+           else return res.json({err:'User not exists'});
+         }
+     });
+});
+
 module.exports = router;
