@@ -149,11 +149,6 @@ router.post('/user/login', (req,res)=>{
         if(error) return res.status(304).end();
         else {
           if (doc) {
-            if (user.type !== doc.type) {
-              return res.json({
-                authenticated: false
-              });
-            }
 
             if (!bcrypt.compareSync(user.password, doc.password)){
               return res.json({
