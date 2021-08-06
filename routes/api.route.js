@@ -55,7 +55,8 @@ router.get('/course/all',(req,res)=>{
     .exec(function(error, docs) {
         if(error) return res.status(304).end();
         else{
-          return res.json(docs)
+          const data = docs.map(item=>({...item,teacherName:'Jeff'}))
+          return res.json(data)
         }
     });
 });
