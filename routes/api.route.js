@@ -8,6 +8,7 @@ const authMiddewares =  require('../middlewares/auth.mdw');
 
 //connect to mongodb
 let mongoose=require('mongoose');
+//node 2.12.12  mongodb://master:<password>@cluster0-shard-00-00.shiaf.mongodb.net:27017,cluster0-shard-00-01.shiaf.mongodb.net:27017,cluster0-shard-00-02.shiaf.mongodb.net:27017/myFirstDatabase?ssl=true&replicaSet=atlas-uj30is-shard-0&authSource=admin&retryWrites=true&w=majority
 mongoose.connect('mongodb+srv://master:worker@cluster0.shiaf.mongodb.net/myFirstDatabase?retryWrites=true&w=majority', {useNewUrlParser: true,useUnifiedTopology: true });
 //model
 const courseSchema = new mongoose.Schema({
@@ -54,8 +55,8 @@ router.get('/course/all',(req,res)=>{
  Course.find({})
     .exec(function(error, docs) {
         if(error) return res.status(304).end();
-        else{
-          const data = docs.map(item=>({...item,teacherName:'Jeff'}))
+        else {
+          const data = docs.map((item,index)=>{return {...item._doc,teacherName:`Jeff ${index}`}})
           return res.json(data)
         }
     });
