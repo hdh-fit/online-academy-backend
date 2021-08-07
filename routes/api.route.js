@@ -134,7 +134,7 @@ router.get('/course/detail/:id', (req, res) => {
                   }
                 }
               }
-              const response = Response.successResponse(docs);
+              const response = Response.successResponse(doc);
               return res.status(200).json(response)
             });
           })
