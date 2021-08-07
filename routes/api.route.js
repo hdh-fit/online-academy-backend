@@ -137,7 +137,9 @@ router.post('/user/register', valid(validUserSchema), (req,res)=>{
           else {
             newuser.password = bcrypt.hashSync(newuser.password, 10);
             newuser.save();
-            res.json(newuser);
+            const user = newuser.toObject();
+            delete user.password;
+            res.json(user);
           }
         }
     });
@@ -185,7 +187,11 @@ router.get('/user/info', authMiddewares, (req,res)=>{
          console.log(error)
          if(error) return res.status(304).end();
          else{
-           if(doc) return res.json(doc);
+           if(doc) {
+            doc = doc.toObject();
+            delete doc.password; 
+            return res.json(doc);
+           }
            else return res.json({err:'User not exists'});
          }
      });
@@ -206,6 +212,9 @@ router.put('/user/info', authMiddewares, (req,res)=>{
              doc.level = req.body.level;
              doc.email = req.body.email;
              doc.save();
+
+             doc = doc.toObject();
+             delete doc.password;
              return res.json(doc);
            }
            else return res.json({err:'User not exists'});
