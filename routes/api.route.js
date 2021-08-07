@@ -5,9 +5,11 @@ const { valid } = require('../middlewares/vilidate.mdw');
 const validUserSchema = require('../schemas/user.json');
 const jwt = require('jsonwebtoken');
 const authMiddewares =  require('../middlewares/auth.mdw');
+const Response = require('../jsonResponse/jsonResponse')
 
 //connect to mongodb
 let mongoose=require('mongoose');
+const jsonResponse = require('../jsonResponse/jsonResponse');
 //node 2.12.12  mongodb://master:<password>@cluster0-shard-00-00.shiaf.mongodb.net:27017,cluster0-shard-00-01.shiaf.mongodb.net:27017,cluster0-shard-00-02.shiaf.mongodb.net:27017/myFirstDatabase?ssl=true&replicaSet=atlas-uj30is-shard-0&authSource=admin&retryWrites=true&w=majority
 mongoose.connect('mongodb+srv://master:worker@cluster0.shiaf.mongodb.net/myFirstDatabase?retryWrites=true&w=majority', {useNewUrlParser: true,useUnifiedTopology: true });
 //model
@@ -54,10 +56,14 @@ const Video = mongoose.model('Video', videoSchema);
 router.get('/course/all',(req,res)=>{
  Course.find({})
     .exec(function(error, docs) {
-        if(error) return res.status(304).end();
+        if(error) {
+          const response = Response.falseResponse(error);
+          return res.status(304).json(response);
+        }
         else {
-          const data = docs.map((item,index)=>{return {...item._doc,teacherName:`Jeff ${index}`}})
-          return res.json(data)
+          const data = docs.map((item,index)=>{return {...item._doc,teacherName:`Jeff ${index}`}});
+          const response = Response.successResponse(data);
+          return res.status(200).json(response);
         }
     });
 });
@@ -67,10 +73,14 @@ router.get('/course/top-10-view',(req,res)=>{
     .sort({view: -1})// sắp xếp giảm dần theo view
     .limit(10)// lấy nhiều nhất 10 item
     .exec(function(error, docs) {
-        if(error) return res.status(304).end();
+        if(error) {
+          const response = Response.falseResponse(error);
+          return res.status(304).json(response);
+        }
         else{
           // for(let i=0;i<docs.length;i++) console.log(docs[i].view) //test ok
-          return res.json(docs)
+          const response = Response.successResponse(docs);
+          return res.status(200).json(response);
         }
     });
 })
@@ -80,10 +90,14 @@ router.get('/course/top-10-date-create',(req,res)=>{
     .sort({dateCourse: -1})// sắp xếp giảm dần theo thời gian
     .limit(10)// lấy nhiều nhất 10 item
     .exec(function(error, docs) {
-        if(error) return res.status(304).end();
+        if(error) {
+          const response = Response.falseResponse(error);
+          return res.status(304).json(response);
+        }
         else{
           // for(let i=0;i<docs.length;i++) console.log(docs[i].dateCourse) // test ok
-          return res.json(docs)
+          const response = Response.successResponse(docs);
+          return res.status(200).json(response);
         }
     });
 })
@@ -93,7 +107,10 @@ router.get('/course/detail/:id', (req, res) => {
   Course.findOne({ _id: req.params.id })
      .lean()
     .exec(function (error, doc) {
-      if (error) return res.status(304).end();
+      if (error) {
+        const response = Response.falseResponse(error);
+        return res.status(304).json(response);
+      }
       else {
         if (doc) {
           //tim video voi course do
@@ -117,11 +134,15 @@ router.get('/course/detail/:id', (req, res) => {
                   }
                 }
               }
-              res.json(doc)
+              const response = Response.successResponse(docs);
+              return res.status(200).json(response)
             });
           })
         }
-        else return res.json({ err: 'No item with provided id' })
+        else {
+          const response = Response.falseResponse('No item with provided id');
+          return res.status(304).json(response);
+        }
       }
     });
 });
@@ -131,15 +152,22 @@ router.post('/user/register', valid(validUserSchema), (req,res)=>{
   User.findOne({username: newuser.username})
     .exec(function(error, doc) {
         console.log(error)
-        if(error) return res.status(304).end();
+        if(error) {
+          const response = Response.falseResponse(error);
+          return res.status(304).json(response);
+        }
         else{
-          if(doc) return res.json({err:'User already exists'})
+          if(doc) {
+            const response = Response.falseResponse('User already exists');
+            return res.status(200).json(response);
+          }
           else {
             newuser.password = bcrypt.hashSync(newuser.password, 10);
             newuser.save();
             const user = newuser.toObject();
             delete user.password;
-            res.json(user);
+            const response = Response.successResponse(user);
+            return res.status(200).json(response);
           }
         }
     });
@@ -150,7 +178,10 @@ router.post('/user/login', (req,res)=>{
   User.findOne({username: user.username})
     .exec(function(error, doc) {
         console.log(error)
-        if(error) return res.status(304).end();
+        if(error) {
+          const response = Response.falseResponse(error);
+          return res.status(200).json(response);
+        }
         else {
           if (doc) {
 
@@ -171,12 +202,18 @@ router.post('/user/login', (req,res)=>{
     
             const accessToken = jwt.sign(payload, 'WEDNC2021', opts);
             
-            return res.json({
+            const data = {
                 authenticated: true,
                 accessToken: accessToken
-            });
+            };
+
+            const response = Response.successResponse(data);
+            return res.status(200).json(response);
           }
-          else return res.json({err:'User not exists'})
+          else {
+            const response = Response.falseResponse('User not exists');
+            return res.status(200).json(response);
+          }
         }
     });
 });
@@ -185,15 +222,22 @@ router.get('/user/info', authMiddewares, (req,res)=>{
   User.findOne({_id:req.user.id})
      .exec(function(error, doc) {
          console.log(error)
-         if(error) return res.status(304).end();
-         else{
-           if(doc) {
+         if(error) {
+          const response = Response.falseResponse(error);
+          return res.status(200).json(response);
+        }
+        else{
+          if(doc) {
             doc = doc.toObject();
             delete doc.password; 
-            return res.json(doc);
-           }
-           else return res.json({err:'User not exists'});
-         }
+            const response = Response.successResponse(doc);
+            return res.status(200).json(response);
+          }
+          else {
+            const response = Response.falseResponse('User not exists');
+            return res.status(200).json(response);
+          }
+        }
      });
 });
 
@@ -201,7 +245,10 @@ router.put('/user/info', authMiddewares, (req,res)=>{
   User.findOne({_id:req.user.id})
      .exec(function(error, doc) {
          console.log(error)
-         if(error) return res.status(304).end();
+         if(error) {
+          const response = Response.falseResponse(error);
+          return res.status(200).json(response);
+         }
          else{
            if(doc) {
              doc.fullname = req.body.fullname; 
@@ -215,9 +262,13 @@ router.put('/user/info', authMiddewares, (req,res)=>{
 
              doc = doc.toObject();
              delete doc.password;
-             return res.json(doc);
+             const response = Response.successResponse(doc);
+             return res.status(200).json(response);
            }
-           else return res.json({err:'User not exists'});
+           else {
+            const response = Response.falseResponse('User not exists');
+            return res.status(200).json(response);
+           }
          }
      });
 });
@@ -226,23 +277,30 @@ router.put('/user/password', authMiddewares, (req,res)=>{
   User.findOne({_id:req.user.id})
      .exec(function(error, doc) {
          console.log(error)
-         if(error) return res.status(304).end();
+         if(error) {
+          const response = Response.falseResponse(error);
+          return res.status(200).json(response);
+         }
          else{
            if(doc) {
 
             if (!bcrypt.compareSync(req.body.password, doc.password)){
-              return res.json({
-                  message: "Incorrect password"
-              });
+              const response = Response.falseResponse('Incorrect password');
+              return res.status(200).json(response);
             }
 
             doc.password = bcrypt.hashSync(req.body.newpassword, 10);
             doc.save();
-            return res.json({
-              message: "Change password successfully"
-            });
+            
+            const response = Response.successResponse({message: 'Change password successfully'});
+            return res.status(200).json(response);
+
            }
-           else return res.json({err:'User not exists'});
+           else 
+           {
+            const response = Response.falseResponse('User not exists');
+            return res.status(200).json(response);
+           }
          }
      });
 });
