@@ -54,16 +54,33 @@ const Video = mongoose.model('Video', videoSchema);
 
 //lấy tất cả danh sách khóa học
 router.get('/course/all',(req,res)=>{
- Course.find({})
+ Course.find({}).lean()
     .exec(function(error, docs) {
         if(error) {
           const response = Response.falseResponse(error);
           return res.status(304).json(response);
         }
         else {
-          const data = docs.map((item,index)=>{return {...item._doc,teacherName:`Jeff ${index}`}});
-          const response = Response.successResponse(data);
-          return res.status(200).json(response);
+          let teacherId=[];
+          for(let i=0;i<docs.length;i++){
+            teacherId.push(docs[i].idTeacher)
+          }
+          User.find({
+              '_id': {
+                $in: teacherId
+              }
+            }).select('fullname').exec(function (err, teachersName) {
+              for (let i = 0; i < docs.length; i++) {
+                for (let j = 0; j < teachersName.length; j++) {
+                  if (docs[i].idTeacher==teachersName[j]._id) {
+                    docs[i].nameTeacher = teachersName[j].fullname;
+                    break;
+                  }
+                }
+              }
+              const response = Response.successResponse(docs);
+              return res.status(200).json(response)
+            });
         }
     });
 });
@@ -72,15 +89,33 @@ router.get('/course/top-10-view',(req,res)=>{
   Course.find({})
     .sort({view: -1})// sắp xếp giảm dần theo view
     .limit(10)// lấy nhiều nhất 10 item
+    .lean()
     .exec(function(error, docs) {
         if(error) {
           const response = Response.falseResponse(error);
           return res.status(304).json(response);
         }
         else{
-          // for(let i=0;i<docs.length;i++) console.log(docs[i].view) //test ok
-          const response = Response.successResponse(docs);
-          return res.status(200).json(response);
+          let teacherId=[];
+          for(let i=0;i<docs.length;i++){
+            teacherId.push(docs[i].idTeacher)
+          }
+          User.find({
+              '_id': {
+                $in: teacherId
+              }
+            }).select('fullname').exec(function (err, teachersName) {
+              for (let i = 0; i < docs.length; i++) {
+                for (let j = 0; j < teachersName.length; j++) {
+                  if (docs[i].idTeacher==teachersName[j]._id) {
+                    docs[i].nameTeacher = teachersName[j].fullname;
+                    break;
+                  }
+                }
+              }
+              const response = Response.successResponse(docs);
+              return res.status(200).json(response)
+            });
         }
     });
 })
@@ -89,15 +124,34 @@ router.get('/course/top-10-date-create',(req,res)=>{
   Course.find({})
     .sort({dateCourse: -1})// sắp xếp giảm dần theo thời gian
     .limit(10)// lấy nhiều nhất 10 item
+    .lean()
     .exec(function(error, docs) {
         if(error) {
           const response = Response.falseResponse(error);
           return res.status(304).json(response);
         }
         else{
-          // for(let i=0;i<docs.length;i++) console.log(docs[i].dateCourse) // test ok
-          const response = Response.successResponse(docs);
-          return res.status(200).json(response);
+          let teacherId=[];
+          for(let i=0;i<docs.length;i++){
+            teacherId.push(docs[i].idTeacher)
+          }
+          User.find({
+              '_id': {
+                $in: teacherId
+              }
+            }).select('fullname').exec(function (err, teachersName) {
+              console.log(teachersName)
+              for (let i = 0; i < docs.length; i++) {
+                for (let j = 0; j < teachersName.length; j++) {
+                  if (docs[i].idTeacher==teachersName[j]._id) {
+                    docs[i].nameTeacher = teachersName[j].fullname;
+                    break;
+                  }
+                }
+              }
+              const response = Response.successResponse(docs);
+              return res.status(200).json(response)
+            });
         }
     });
 })
