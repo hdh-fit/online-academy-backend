@@ -1,5 +1,5 @@
-const PAGE_ACCESS_TOKEN = "EAAEmxh3ScykBAEcnImYCo0JSt4VM1uEch0hDcQshZBhD01UPWdFMxhZAzq9DnWc2ZBmDHPOw5IFt4KV0WHXmFJKZCO6kWsGHDNu8d9xhB34xapOpFmGHRdAAZAhfPKeVJLoH0ZAFtA2brdk70tgggEYsaKEnVoHWFXRzQ4buQkUieDWc250CrB";
-const VERIFY_TOKEN = "EAAEmxh3ScykBAF4NrvKNSuLdFuJJibAuZBvef0YlyL2NNo7ny6mjkpCDa4lwPwUsIQHWtdLJ8aZBmeDCwHLpgL3H8XzdxGIbrFSscpCXb4quqRxUP7LwsGZCHynOd5jWnGbMR2AsCerS0ofhWgCLVOOEetoaaT9AizqK2hF5a1cY4oZAuKGr";
+const PAGE_ACCESS_TOKEN = "EAAEmxh3ScykBAG6JZC4JEy3D2l5Je3llZBudxSvRxJPahXCudoKH5aZCtZBPbwz5Ogrpud4ZCA3ZBSv834I6wpFQLQQGVUdXGLK7IiBxLiS4304Q9wIr72a5opVaNZCsSKtbqJYdlzHsDSb5DvlBtNrLmRAGyoZCi1Cafts5L1V3ZCaZB9Xl5YYjER";
+const VERIFY_TOKEN = "thisIsVerifyToken";
 const request = require('request');
 
 const postWebHook = (req, res) => {
@@ -137,7 +137,7 @@ const callSendAPI = (sender_psid, response) => {
 	// Send the HTTP request to the Messenger Platform
 	request({
 		"uri": "https://graph.facebook.com/v2.6/me/messages",
-		"qs": { "access_token": VERIFY_TOKEN },
+		"qs": { "access_token": PAGE_ACCESS_TOKEN },
 		"method": "POST",
 		"json": request_body
 	}, (err, res, body) => {
