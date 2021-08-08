@@ -1,4 +1,4 @@
-const PAGE_ACCESS_TOKEN = "EAAEmxh3ScykBAKvAJZByPljlw3MuP1goXByyDcnZAVRZAqYxWRATuFfKM9Sy0mKgHIuKCgpZAPZCf8UcU9riBxGWSW4rVjnDtwlcrndgjmO5q8JxCj7cSW4GeT0jV0pY1FGMVU0KNoSGRuk7lZAsFSasx3DlfmSJMqxsFJvjaupeiYM6NubGuY";
+const p_token = "EAAEmxh3ScykBAI6GGsGZAZAz3mgZAehd9ZCzuWfPlHi5QMgiIAuOlz8Y5mlRYYZCGaUngjSu94XqqZA70k8wMR4jfnIO0MLrayTXuYzUBlRnqQ4DR95pP1aTzBlmXEPpaDuwIphP7THgAavbvGVMyybZCLvNmSQmINaLbtkGLhZA6pqQC8Jp15trZBorZB03E3ZAG3Gl1se3ZBQ3ok4sZCkX2n7og";
 const VERIFY_TOKEN = "thisIsVerifyToken";
 const request = require('request');
 
@@ -136,8 +136,8 @@ const callSendAPI = (sender_psid, response) => {
 
 	// Send the HTTP request to the Messenger Platform
 	request({
-		"uri": "https://graph.facebook.com/v2.6/me/messages",
-		"qs": { "access_token": PAGE_ACCESS_TOKEN },
+		"uri": "https://graph.facebook.com/v11.0/me/messages",
+		"qs": { "access_token": p_token },
 		"method": "POST",
 		"json": request_body
 	}, (err, res, body) => {
