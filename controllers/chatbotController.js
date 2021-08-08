@@ -1,5 +1,6 @@
-const p_token = "EAAEmxh3ScykBAFI4fi6nWQMEfKTKPzMKBp1ec3uyO63niCuW5V9zuuKLRwQRqkL0AyZAyz4zHyQOYqZBzNwo57hAgUxmTKuM43wPgwbocXZCZCuz4uA5u7PsqFqJF09LphjopfEdXqCljlq5s9SphegTyKpQEGpt3ZA97N5hLguqSufxuZBEpjqwP0Ue8jQq45nUPvvUTeiQZDZD";
-const VERIFY_TOKEN = "thisIsVerifyToken";
+require("dotenv").config();
+const PAGE_TOKEN = process.env.PAGE_TOKEN;
+const VERIFY_TOKEN =process.env.VERIFY_TOKEN;
 const request = require('request');
 
 const postWebHook = (req, res) => {
@@ -145,7 +146,7 @@ const callSendAPI = (sender_psid, response) => {
 
 	// Send the HTTP request to the Messenger Platform
 	request({
-		"uri": `https://graph.facebook.com/v11.0/me/messages?access_token=${p_token}`,
+		"uri": `https://graph.facebook.com/v11.0/me/messages?access_token=${PAGE_TOKEN}`,
 		"method": "POST",
 		"json": request_body
 	}, (err, res, body) => {
