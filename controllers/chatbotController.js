@@ -1,4 +1,4 @@
-const PAGE_ACCESS_TOKEN = "EAAEmxh3ScykBAG6JZC4JEy3D2l5Je3llZBudxSvRxJPahXCudoKH5aZCtZBPbwz5Ogrpud4ZCA3ZBSv834I6wpFQLQQGVUdXGLK7IiBxLiS4304Q9wIr72a5opVaNZCsSKtbqJYdlzHsDSb5DvlBtNrLmRAGyoZCi1Cafts5L1V3ZCaZB9Xl5YYjER";
+const PAGE_ACCESS_TOKEN = "EAAEmxh3ScykBAKvAJZByPljlw3MuP1goXByyDcnZAVRZAqYxWRATuFfKM9Sy0mKgHIuKCgpZAPZCf8UcU9riBxGWSW4rVjnDtwlcrndgjmO5q8JxCj7cSW4GeT0jV0pY1FGMVU0KNoSGRuk7lZAsFSasx3DlfmSJMqxsFJvjaupeiYM6NubGuY";
 const VERIFY_TOKEN = "thisIsVerifyToken";
 const request = require('request');
 
@@ -141,7 +141,7 @@ const callSendAPI = (sender_psid, response) => {
 		"method": "POST",
 		"json": request_body
 	}, (err, res, body) => {
-		console.log('body:', body, 'res:', res);
+		console.log('body:', body);
 		if (!err) {
 			console.log('message sent!');
 		} else {
