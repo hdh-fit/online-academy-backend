@@ -1,4 +1,4 @@
-const PAGE_ACCESS_TOKEN = "EAAEmxh3ScykBAFmJj1NSEZByLzrvEiSAvGtQMWxWng3CkOZAnKd8wcZBuFvn20i8YaaKE5DELRgVf5YmXS9bRUEy6NLqT3sSC33vorNAXIjV6yIB7a4jsMVZAHIQd8gN31BL9KW6F473NjmuE1vGBAAvFd99sAe5iIh2o8xohiZBpqeUFuzi0";
+const PAGE_ACCESS_TOKEN = "EAAEmxh3ScykBAEcnImYCo0JSt4VM1uEch0hDcQshZBhD01UPWdFMxhZAzq9DnWc2ZBmDHPOw5IFt4KV0WHXmFJKZCO6kWsGHDNu8d9xhB34xapOpFmGHRdAAZAhfPKeVJLoH0ZAFtA2brdk70tgggEYsaKEnVoHWFXRzQ4buQkUieDWc250CrB";
 const VERIFY_TOKEN = "EAAEmxh3ScykBAF4NrvKNSuLdFuJJibAuZBvef0YlyL2NNo7ny6mjkpCDa4lwPwUsIQHWtdLJ8aZBmeDCwHLpgL3H8XzdxGIbrFSscpCXb4quqRxUP7LwsGZCHynOd5jWnGbMR2AsCerS0ofhWgCLVOOEetoaaT9AizqK2hF5a1cY4oZAuKGr";
 const request = require('request');
 
@@ -132,6 +132,7 @@ const callSendAPI = (sender_psid, response) => {
 		},
 		"message": response
 	};
+	console.log('request_body', request_body);
 
 	// Send the HTTP request to the Messenger Platform
 	request({
