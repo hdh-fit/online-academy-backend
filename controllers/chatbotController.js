@@ -141,6 +141,7 @@ const callSendAPI = (sender_psid, response) => {
 		"method": "POST",
 		"json": request_body
 	}, (err, res, body) => {
+		console.log('body:', body, 'res:', res);
 		if (!err) {
 			console.log('message sent!');
 		} else {
