@@ -1,4 +1,4 @@
-const p_token = "EAAEmxh3ScykBAI6GGsGZAZAz3mgZAehd9ZCzuWfPlHi5QMgiIAuOlz8Y5mlRYYZCGaUngjSu94XqqZA70k8wMR4jfnIO0MLrayTXuYzUBlRnqQ4DR95pP1aTzBlmXEPpaDuwIphP7THgAavbvGVMyybZCLvNmSQmINaLbtkGLhZA6pqQC8Jp15trZBorZB03E3ZAG3Gl1se3ZBQ3ok4sZCkX2n7og";
+const p_token = "EAAEmxh3ScykBAKoktPARICK2GchE6JRNOk4D7Tm6e6GvKcd57CY8rHuUE7p0o0YUnRjgKqB1g6HPCBQRONJWUMSKh2ZAkfgMJQ91TR3KYaYPZAs9X4ka7k3JZAPR6upw2PkDWPot39UIUKBlqQJl7tpMiR8MO7uA6wTqSePO7HQmVK71dSXgrZBVyiTCpNLG4ZC074959qRZAwzupdKgGS";
 const VERIFY_TOKEN = "thisIsVerifyToken";
 const request = require('request');
 
@@ -126,18 +126,26 @@ const handlePostback = (sender_psid, received_postback) => {
 // Sends response messages via the Send API
 const callSendAPI = (sender_psid, response) => {
 	// Construct the message body
+	//let request_body = {
+	//	"recipient": {
+	//		"id": sender_psid
+	//	},
+	//	"message": response,
+	//	"messaging_type": "RESPONSE",
+	//};
 	let request_body = {
+		"messaging_type": "RESPONSE",
 		"recipient": {
 			"id": sender_psid
 		},
 		"message": response
 	};
+
 	console.log('request_body', request_body);
 
 	// Send the HTTP request to the Messenger Platform
 	request({
-		"uri": "https://graph.facebook.com/v11.0/me/messages",
-		"qs": { "access_token": p_token },
+		"uri": `https://graph.facebook.com/v11.0/me/messages?access_token=${p_token}`,
 		"method": "POST",
 		"json": request_body
 	}, (err, res, body) => {
