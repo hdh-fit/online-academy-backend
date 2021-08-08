@@ -360,7 +360,4 @@ router.put('/user/password', authMiddewares, (req, res) => {
     });
 });
 
-router.get("/webhook", chatbotController.getWebHook);
-router.post("/webhook", chatbotController.postWebHook);
-
 module.exports = router;

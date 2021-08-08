@@ -13,6 +13,7 @@ app.use(express.json());
 
 
 app.use('/api/', require('./routes/api.route'));
+app.use('/', require('./routes/chatbot.route'));
 
 
 app.use(function (req, res, next) {
