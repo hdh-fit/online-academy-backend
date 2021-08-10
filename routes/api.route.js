@@ -280,7 +280,6 @@ router.post('/user/login', (req, res) => {
 router.get('/user/info', authMiddewares, (req, res) => {
 
   User.findOne({ _id: req.user.id })
-    .lean()
     .exec(function (error, doc) {
       console.log(error);
       if (error) {
