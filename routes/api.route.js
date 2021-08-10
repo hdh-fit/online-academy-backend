@@ -43,7 +43,8 @@ const userSchema = new mongoose.Schema({
   dob: Date,
   describe: String,
   level: String,
-  email: String
+  email: String,
+  watchlist: [String]
 });
 const User = mongoose.model('User', userSchema);
 
@@ -232,6 +233,7 @@ router.post('/user/register', valid(validUserSchema), (req, res) => {
 router.post('/user/login', (req, res) => {
   const user = req.body;
   User.findOne({ username: user.username })
+    .lean()
     .exec(function (error, doc) {
       console.log(error);
       if (error) {
@@ -276,6 +278,7 @@ router.post('/user/login', (req, res) => {
 
 router.get('/user/info', authMiddewares, (req, res) => {
   User.findOne({ _id: req.user.id })
+    .lean()
     .exec(function (error, doc) {
       console.log(error);
       if (error) {
@@ -359,5 +362,81 @@ router.put('/user/password', authMiddewares, (req, res) => {
       }
     });
 });
+
+router.post('/user/watchlist', authMiddewares, (req, res) => {
+  course = req.body.course;
+  User.findOne({ _id: req.user.id })
+    .exec(function (error, doc) {
+      if (error) {
+        const response = Response.falseResponse(error);
+        return res.status(200).json(response);
+      }
+      else {
+        if (doc) {
+          if(doc.watchlist.indexOf(course) > -1) {
+            doc.watchlist.pull(course);
+          }
+          else doc.watchlist.push(course);
+          doc.save();
+          const response = Response.successResponse(doc);
+          return res.status(200).json(response);
+        }
+        else {
+          const response = Response.falseResponse('User not exists');
+          return res.status(200).json(response);
+        }
+      }
+    });
+})
+
+router.get('/user/watchlist', authMiddewares, (req, res) => {
+  User.findOne({ _id: req.user.id })
+    .lean()
+    .exec(function (error, doc) {
+      if (error) {
+        const response = Response.falseResponse(error);
+        return res.status(200).json(response);
+      }
+      else {
+        if (doc) {
+
+          Course.find({
+            '_id': {
+              $in: doc.watchlist
+            }
+          },
+          '_id name rating image_link dateCourse isFinish view price category idTeacher')
+          .lean()
+          .exec(function (error, watchlist) {
+            let teacherId = [];
+            for (let i = 0; i < watchlist.length; i++) {
+              teacherId.push(watchlist[i].idTeacher);
+            }
+            User.find({
+              '_id': {
+                $in: teacherId
+              }
+            }).select('fullname').exec(function (err, teachersName) {
+              for (let i = 0; i < watchlist.length; i++) {
+                for (let j = 0; j < teachersName.length; j++) {
+                  if (watchlist[i].idTeacher == teachersName[j]._id) {
+                    watchlist[i].nameTeacher = teachersName[j].fullname;
+                    break;
+                  }
+                }
+              }
+              const response = Response.successResponse(watchlist);
+              return res.status(200).json(response);
+            });
+          });
+        }
+        else {
+
+          const response = Response.falseResponse('User not exists');
+          return res.status(200).json(response);
+        }
+      }
+    });
+})
 
 module.exports = router;
