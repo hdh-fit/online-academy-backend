@@ -27,7 +27,7 @@ const courseSchema = new mongoose.Schema({
   view: Number,
   price: Number,
   category: String,
-  review: [{ comment: String, id_user: mongoose.ObjectId, rate: Number }],
+  review: [{ comment: String, id_user: mongoose.ObjectId, rate: Number,date:{type: Date, default: Date.now} }],
   feedBack: [{ type: String }]
 });
 const Course = mongoose.model('Course', courseSchema);
