@@ -233,7 +233,6 @@ router.post('/user/register', valid(validUserSchema), (req, res) => {
 router.post('/user/login', (req, res) => {
   const user = req.body;
   User.findOne({ username: user.username })
-    .lean()
     .exec(function (error, doc) {
       console.log(error);
       if (error) {
@@ -253,6 +252,8 @@ router.post('/user/login', (req, res) => {
             id: doc.id,
             type: doc.type
           };
+
+          console.log(payload);
 
           const opts = {
             expiresIn: 36000
@@ -277,6 +278,7 @@ router.post('/user/login', (req, res) => {
 });
 
 router.get('/user/info', authMiddewares, (req, res) => {
+
   User.findOne({ _id: req.user.id })
     .lean()
     .exec(function (error, doc) {
@@ -286,6 +288,7 @@ router.get('/user/info', authMiddewares, (req, res) => {
         return res.status(200).json(response);
       }
       else {
+
         if (doc) {
           doc = doc.toObject();
           delete doc.password;
