@@ -440,6 +440,40 @@ router.get('/user/watchlist', authMiddewares, (req, res) => {
         }
       }
     });
+});
+router.post('/review/:idCourse', authMiddewares,(req,res)=>{
+  User.findOne({ _id: req.user.id })
+    .lean()
+    .exec(function (error, doc) {
+      if (error) {
+        const response = Response.falseResponse(error);
+        return res.status(200).json(response);
+      }
+      else {
+        if (doc) {
+          Course.findOne({_id:req.params.idCourse}).lean().exec((err,course)=>{
+            if(course){
+              let reviewObject={
+                conmment:req.body.comment,
+                rate:parseInt(req.body.rate),
+                id_user:req.user.id
+              }
+              course.review.push(reviewObject);
+              course.save();
+              reviewObject.fullname=doc.fullname;
+              return res.status(200).json(reviewObject);
+            }else{
+              return res.json({success:'fail',error:'không tìm thấy course với id'})
+            }
+          })
+        }
+        else {
+
+          const response = Response.falseResponse('User not exists');
+          return res.status(200).json(response);
+        }
+      }
+    });
 })
 
 module.exports = router;
