@@ -1,6 +1,6 @@
 require("dotenv").config();
 const PAGE_TOKEN = process.env.PAGE_TOKEN;
-const VERIFY_TOKEN =process.env.VERIFY_TOKEN;
+const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 const request = require('request');
 
 const postWebHook = (req, res) => {
@@ -16,7 +16,7 @@ const postWebHook = (req, res) => {
 			console.log(webhook_event);
 
 			// Get the sender PSID
-			let sender_psid = webhook_event.sender.id;
+			let sender_psid = webhook_event.sender?.id || webhook_event.sender?.user_ref;
 			console.log('Sender PSID: ' + sender_psid);
 
 			// Check if the event is a message or postback and
@@ -119,6 +119,8 @@ const handlePostback = (sender_psid, received_postback) => {
 		response = { "text": "Thanks!" };
 	} else if (payload === 'no') {
 		response = { "text": "Oops, try sending another image." };
+	} else if (payload === 'start') {
+		response = optionsResponsive;
 	}
 	// Send the message to acknowledge the postback
 	callSendAPI(sender_psid, response);
@@ -159,7 +161,48 @@ const callSendAPI = (sender_psid, response) => {
 	});
 };
 
+
+const optionsResponsive = {
+	"attachment": {
+		"type": "template",
+		"payload": {
+			"template_type": "generic",
+			"elements": [
+				{
+					"title": "Welcome!",
+					"image_url": "https://cafedev.vn/wp-content/uploads/2020/05/cafedevn_css.jpg",
+					"subtitle": "Chào mừng bạn đến với FIT Study <3",
+					"default_action": {
+						"type": "web_url",
+						"url": "https://fitstudy.netlify.app",
+						"webview_height_ratio": "tall"
+					},
+					"buttons": [
+						{
+							"type": "postback",
+							"payload": "DEVELOPER_DEFINED_PAYLOAD",
+							"title": "Tìm kiếm khoá học"
+						},
+						{
+							"type": "postback",
+							"title": "Duyệt theo danh mục",
+							"payload": "DEVELOPER_DEFINED_PAYLOAD"
+						},
+						{
+							"type": "postback",
+							"title": "Xem chi tiết khoá học",
+							"payload": "DEVELOPER_DEFINED_PAYLOAD"
+						}
+					]
+				}
+			]
+		}
+	}
+};
+
+
 module.exports = {
 	postWebHook,
 	getWebHook
 };
+
