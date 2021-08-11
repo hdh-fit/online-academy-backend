@@ -440,6 +440,7 @@ router.get('/user/watchlist', authMiddewares, (req, res) => {
       }
     });
 });
+
 router.post('/review/:idCourse', authMiddewares,(req,res)=>{
   User.findOne({ _id: req.user.id })
     .lean()
@@ -464,6 +465,38 @@ router.post('/review/:idCourse', authMiddewares,(req,res)=>{
             }else{
               return res.json({success:'fail',error:'không tìm thấy course với id'})
             }
+          })
+        }
+        else {
+
+          const response = Response.falseResponse('User not exists');
+          return res.status(200).json(response);
+        }
+      }
+    });
+})
+
+router.get('/user/all', authMiddewares,(req,res)=>{
+  if (req.user.type !== 1) {
+    const response = Response.falseResponse('User has no permissions');
+    return res.status(200).json(response);
+  }
+  User.findOne({ _id: req.user.id })
+    .lean()
+    .exec(function (error, doc) {
+      if (error) {
+        const response = Response.falseResponse(error);
+        return res.status(200).json(response);
+      }
+      else {
+        if (doc) {
+          User.find({},
+            'fullname username phone type gender dob email')
+            .lean()
+            .exec((err,user)=>{
+
+              const response = Response.successResponse(user);
+              return res.status(200).json(response);
           })
         }
         else {
