@@ -3,7 +3,7 @@ const PAGE_TOKEN = process.env.PAGE_TOKEN;
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 const request = require('request');
 
-const optionsResponsive = {
+const optionsResponse = {
 	"attachment": {
 		"type": "template",
 		"payload": {
@@ -36,7 +36,7 @@ const optionsResponsive = {
 	}
 };
 
-const searchResponse = {
+const searchOptions = {
 	"text": `Vui lòng gửi từ khoá cần tìm kiếm.`
 };
 
@@ -169,7 +169,7 @@ const handleMessage = (sender_psid, received_message) => {
 	if (received_message.text) {
 		switch (received_message.text) {
 			case 'start':
-				response = optionsResponsive;
+				response = optionsResponse;
 				break;
 			default:
 				response = searchResponse;
@@ -218,13 +218,13 @@ const handlePostback = (sender_psid, received_postback) => {
 	let payload = received_postback.payload;
 	switch (payload) {
 		case 'start':
-			response = optionsResponsive;
+			response = optionsResponse;
 			break;
 		case 'search':
-			response = searchResponse;
+			response = searchOptions;
 			break;
 		case 'category':
-			response = optionsResponsive;
+			response = optionsResponse;
 			break;
 		default:
 			break;
