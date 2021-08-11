@@ -3,6 +3,106 @@ const PAGE_TOKEN = process.env.PAGE_TOKEN;
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 const request = require('request');
 
+const optionsResponsive = {
+	"attachment": {
+		"type": "template",
+		"payload": {
+			"template_type": "generic",
+			"elements": [
+				{
+					"title": "Welcome!",
+					"image_url": "https://cafedev.vn/wp-content/uploads/2020/05/cafedevn_css.jpg",
+					"subtitle": "Chào mừng bạn đến với FIT Study <3",
+					"default_action": {
+						"type": "web_url",
+						"url": "https://fitstudy.netlify.app",
+						"webview_height_ratio": "tall"
+					},
+					"buttons": [
+						{
+							"type": "postback",
+							"payload": "search",
+							"title": "Tìm kiếm khoá học"
+						},
+						{
+							"type": "postback",
+							"title": "Duyệt theo danh mục",
+							"payload": "category"
+						},
+					]
+				}
+			]
+		}
+	}
+};
+
+const searchResponse = {
+	"text": `Vui lòng gửi từ khoá cần tìm kiếm.`
+};
+
+const searchResponse = {
+	"attachment": {
+		"type": "template",
+		"payload": {
+			"template_type": "generic",
+			"elements": [
+				{
+					"title": "Khoá học HTML",
+					"image_url": "https://codebrainer.azureedge.net/images/what-is-html.jpg",
+					"subtitle": "Nguyễn Thị B",
+					"default_action": {
+						"type": "web_url",
+						"url": "https://fitstudy.netlify.app/course/60febcd46d6d78006fab4d93",
+						"webview_height_ratio": "tall"
+					},
+					"buttons": [
+						{
+							"type": "web_url",
+							"url": "https://fitstudy.netlify.app/course/60febcd46d6d78006fab4d93",
+							"title": "Xem chi tiết khoá học"
+						}
+					]
+				},
+				{
+					"title": "Lập trình NodeJs cơ bản",
+					"image_url": "https://tuanntblog.com/wp-content/uploads/2018/11/nodejs-new-pantone-black.png",
+					"subtitle": "Nguyễn Thị B",
+					"default_action": {
+						"type": "web_url",
+						"url": "https://fitstudy.netlify.app/course/60febcd46d6d78006fab4d90",
+						"webview_height_ratio": "tall"
+					},
+					"buttons": [
+						{
+							"type": "web_url",
+							"url": "https://fitstudy.netlify.app/course/60febcd46d6d78006fab4d90",
+							"title": "Xem chi tiết khoá học"
+						}
+					]
+				},
+				{
+					"title": "Khóa học JavaScript",
+					"image_url": "https://wiki.tino.org/wp-content/uploads/2020/10/JS-750x375.jpg",
+					"subtitle": "Nguyễn Thị B",
+					"default_action": {
+						"type": "web_url",
+						"url": "https://fitstudy.netlify.app/course/60febcd46d6d78006fab4d95",
+						"webview_height_ratio": "tall"
+					},
+					"buttons": [
+						{
+							"type": "web_url",
+							"url": "https://fitstudy.netlify.app/course/60febcd46d6d78006fab4d95",
+							"title": "Xem chi tiết khoá học"
+						}
+					]
+				}
+			]
+		}
+	}
+};
+
+
 const postWebHook = (req, res) => {
 	let body = req.body;
 
@@ -67,11 +167,14 @@ const handleMessage = (sender_psid, received_message) => {
 
 	// Check if the message contains text
 	if (received_message.text) {
-
-		// Create the payload for a basic text message
-		response = {
-			"text": `You sent the message: "${received_message.text}". Now send me an image!`
-		};
+		switch (received_message.text) {
+			case 'start':
+				response = optionsResponsive;
+				break;
+			default:
+				response = searchResponse;
+				break;
+		}
 	} else if (received_message.attachments) {
 
 		// Gets the URL of the message attachment
@@ -113,16 +216,20 @@ const handlePostback = (sender_psid, received_postback) => {
 
 	// Get the payload for the postback
 	let payload = received_postback.payload;
-
-	// Set the response based on the postback payload
-	if (payload === 'yes') {
-		response = { "text": "Thanks!" };
-	} else if (payload === 'no') {
-		response = { "text": "Oops, try sending another image." };
-	} else if (payload === 'start') {
-		response = optionsResponsive;
+	switch (payload) {
+		case 'start':
+			response = optionsResponsive;
+			break;
+		case 'search':
+			response = searchResponse;
+			break;
+		case 'category':
+			response = optionsResponsive;
+			break;
+		default:
+			break;
 	}
-	// Send the message to acknowledge the postback
+
 	callSendAPI(sender_psid, response);
 };
 
@@ -160,46 +267,6 @@ const callSendAPI = (sender_psid, response) => {
 		}
 	});
 };
-
-
-const optionsResponsive = {
-	"attachment": {
-		"type": "template",
-		"payload": {
-			"template_type": "generic",
-			"elements": [
-				{
-					"title": "Welcome!",
-					"image_url": "https://cafedev.vn/wp-content/uploads/2020/05/cafedevn_css.jpg",
-					"subtitle": "Chào mừng bạn đến với FIT Study <3",
-					"default_action": {
-						"type": "web_url",
-						"url": "https://fitstudy.netlify.app",
-						"webview_height_ratio": "tall"
-					},
-					"buttons": [
-						{
-							"type": "postback",
-							"payload": "DEVELOPER_DEFINED_PAYLOAD",
-							"title": "Tìm kiếm khoá học"
-						},
-						{
-							"type": "postback",
-							"title": "Duyệt theo danh mục",
-							"payload": "DEVELOPER_DEFINED_PAYLOAD"
-						},
-						{
-							"type": "postback",
-							"title": "Xem chi tiết khoá học",
-							"payload": "DEVELOPER_DEFINED_PAYLOAD"
-						}
-					]
-				}
-			]
-		}
-	}
-};
-
 
 module.exports = {
 	postWebHook,
