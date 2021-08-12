@@ -42,7 +42,7 @@ const optionsResponse = {
 };
 
 const searchOptions = {
-	"text": `Vui lòng gửi từ khoá cần tìm kiếm.`
+	"text": `Vui lòng gửi từ khoá cần tìm kiếm theo cú pháp @<X> với X là từ khoá cần tìm kiếm. Ví dụ: @android.`
 };
 
 const searchResponse = {
@@ -196,16 +196,19 @@ const handleMessage = (sender_psid, received_message) => {
 					}
 				));
 
-				const response = {
-					"attachment": {
-						"type": "template",
-						"payload": {
-							"template_type": "generic",
-							"elements": elements
+				if (err || elements.length === 0) {
+					response = { text: 'Không tìm thấy kết quả phù hợp.' };
+				} else {
+					response = {
+						"attachment": {
+							"type": "template",
+							"payload": {
+								"template_type": "generic",
+								"elements": elements
+							}
 						}
-					}
-				};
-
+					};
+				}
 				callSendAPI(sender_psid, response);
 			});
 
