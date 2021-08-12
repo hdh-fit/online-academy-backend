@@ -7,7 +7,7 @@ const courseSchema = new mongoose.Schema({
 	rating: Number,
 	image_link: String,
 	idTeacher: String,
-	dateCourse: Date,
+	dateCourse: {type: Date, default: Date.now},
 	isFinish: Boolean,
 	view: Number,
 	price: Number,
