@@ -35,6 +35,12 @@ const videoSchema = new mongoose.Schema({
 });
 const Video = mongoose.model('Video', videoSchema);
 
+const categorySchema = new mongoose.Schema({
+  name:String,
+  label:String
+});
+const Category = mongoose.model('Category', categorySchema);
+
 //lấy tất cả danh sách khóa học
 router.get('/course/all', (req, res) => {
   Course.find({}).lean()
