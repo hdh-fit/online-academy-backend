@@ -1,7 +1,12 @@
 require("dotenv").config();
 const PAGE_TOKEN = process.env.PAGE_TOKEN;
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
+const MONGODB_URL = process.env.MONGO_URL;
+const Response = require('../jsonResponse/jsonResponse');
 const request = require('request');
+const mongoose = require('mongoose');
+const { Course } = require("../models/course_model");
+mongoose.connect(MONGODB_URL, { useNewUrlParser: true, useUnifiedTopology: true });
 
 const optionsResponse = {
 	"attachment": {
@@ -164,16 +169,54 @@ const getWebHook = (req, res) => {
 // Handles messages events
 const handleMessage = (sender_psid, received_message) => {
 	let response;
+	const messText = received_message.text;
 
-	// Check if the message contains text
-	if (received_message.text) {
-		switch (received_message.text) {
-			case 'start':
-				response = optionsResponse;
-				break;
-			default:
-				response = searchResponse;
-				break;
+	if (messText) {
+		if (messText[0] === '@') {
+			const searchKey = messText.slice(1);
+
+			Course.find({ name: { $regex: new RegExp(searchKey, 'i') } }).lean().exec((err, docs) => {
+				const elements = docs.map(course => (
+					{
+						title: course.name,
+						image_url: course.image_link,
+						subtitle: course.short_described,
+						default_action: {
+							type: "web_url",
+							url: `https://fitstudy.netlify.app/course/${course._id}`,
+							webview_height_ratio: "tall"
+						},
+						buttons: [
+							{
+								type: "web_url",
+								url: `https://fitstudy.netlify.app/course/${course._id}`,
+								title: "Xem chi tiết khoá học"
+							}
+						]
+					}
+				));
+
+				const response = {
+					"attachment": {
+						"type": "template",
+						"payload": {
+							"template_type": "generic",
+							"elements": elements
+						}
+					}
+				};
+
+				callSendAPI(sender_psid, response);
+			});
+
+		} else {
+			switch (messText) {
+				case 'start':
+					callSendAPI(sender_psid, optionsResponse);
+					break;
+				default:
+					return;
+			}
 		}
 	} else if (received_message.attachments) {
 
@@ -204,10 +247,9 @@ const handleMessage = (sender_psid, received_message) => {
 				}
 			}
 		};
+		// Sends the response message
+		callSendAPI(sender_psid, response);
 	}
-
-	// Sends the response message
-	callSendAPI(sender_psid, response);
 };
 
 // Handles messaging_postbacks events
@@ -268,8 +310,47 @@ const callSendAPI = (sender_psid, response) => {
 	});
 };
 
+const check = (req, res) => {
+	const searchKey = req.params.text;
+
+	Course.find({ name: { $regex: new RegExp(searchKey, 'i') } }).lean().exec((err, docs) => {
+		const elements = docs.map(course => (
+			{
+				title: course.name,
+				image_url: course.image_link,
+				subtitle: course.short_described,
+				default_action: {
+					type: "web_url",
+					url: `https://fitstudy.netlify.app/course/${course._id}`,
+					webview_height_ratio: "tall"
+				},
+				buttons: [
+					{
+						type: "web_url",
+						url: `https://fitstudy.netlify.app/course/${course._id}`,
+						title: "Xem chi tiết khoá học"
+					}
+				]
+			}
+		));
+
+		const response = {
+			"attachment": {
+				"type": "template",
+				"payload": {
+					"template_type": "generic",
+					"elements": elements
+				}
+			}
+		};
+
+		res.status(200).json(response);
+	});
+};
+
 module.exports = {
 	postWebHook,
-	getWebHook
+	getWebHook,
+	check
 };
 

@@ -1,3 +1,5 @@
+require("dotenv").config();
+const MONGODB_URL = process.env.MONGO_URL;
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const router = express.Router();
@@ -6,31 +8,9 @@ const validUserSchema = require('../schemas/user.json');
 const jwt = require('jsonwebtoken');
 const authMiddewares = require('../middlewares/auth.mdw');
 const Response = require('../jsonResponse/jsonResponse');
-const chatbotController = require("../controllers/chatbotController");
-
-//connect to mongodb
+const { Course } = require("../models/course_model");
 let mongoose = require('mongoose');
-const jsonResponse = require('../jsonResponse/jsonResponse');
-// mongoose.connect('mongodb://master:worker@cluster0-shard-00-00.shiaf.mongodb.net:27017,cluster0-shard-00-01.shiaf.mongodb.net:27017,cluster0-shard-00-02.shiaf.mongodb.net:27017/myFirstDatabase?ssl=true&replicaSet=atlas-uj30is-shard-0&authSource=admin&retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true });
-mongoose.connect('mongodb+srv://master:worker@cluster0.shiaf.mongodb.net/myFirstDatabase?retryWrites=true&w=majority', {useNewUrlParser: true,useUnifiedTopology: true });
-//model
-const courseSchema = new mongoose.Schema({
-  stt: String,
-  name: String,
-  short_described: String,
-  full_described: String,
-  rating: Number,
-  image_link: String,
-  idTeacher: String,
-  dateCourse: Date,
-  isFinish: Boolean,
-  view: Number,
-  price: Number,
-  category: String,
-  review: [{ comment: String, id_user: mongoose.ObjectId, rate: Number,date:{type: Date, default: Date.now} }],
-  feedBack: [{ type: String }]
-});
-const Course = mongoose.model('Course', courseSchema);
+mongoose.connect(MONGODB_URL, { useNewUrlParser: true, useUnifiedTopology: true });
 
 const userSchema = new mongoose.Schema({
   stt: String,
@@ -375,7 +355,7 @@ router.post('/user/watchlist', authMiddewares, (req, res) => {
       }
       else {
         if (doc) {
-          if(doc.watchlist.indexOf(course) > -1) {
+          if (doc.watchlist.indexOf(course) > -1) {
             doc.watchlist.pull(course);
           }
           else doc.watchlist.push(course);
@@ -389,7 +369,7 @@ router.post('/user/watchlist', authMiddewares, (req, res) => {
         }
       }
     });
-})
+});
 
 router.get('/user/watchlist', authMiddewares, (req, res) => {
   User.findOne({ _id: req.user.id })
@@ -407,29 +387,64 @@ router.get('/user/watchlist', authMiddewares, (req, res) => {
               $in: doc.watchlist
             }
           },
-          '_id name rating image_link dateCourse isFinish view price category idTeacher')
-          .lean()
-          .exec(function (error, watchlist) {
-            let teacherId = [];
-            for (let i = 0; i < watchlist.length; i++) {
-              teacherId.push(watchlist[i].idTeacher);
-            }
-            User.find({
-              '_id': {
-                $in: teacherId
-              }
-            }).select('fullname').exec(function (err, teachersName) {
+            '_id name rating image_link dateCourse isFinish view price category idTeacher')
+            .lean()
+            .exec(function (error, watchlist) {
+              let teacherId = [];
               for (let i = 0; i < watchlist.length; i++) {
-                for (let j = 0; j < teachersName.length; j++) {
-                  if (watchlist[i].idTeacher == teachersName[j]._id) {
-                    watchlist[i].nameTeacher = teachersName[j].fullname;
-                    break;
+                teacherId.push(watchlist[i].idTeacher);
+              }
+              User.find({
+                '_id': {
+                  $in: teacherId
+                }
+              }).select('fullname').exec(function (err, teachersName) {
+                for (let i = 0; i < watchlist.length; i++) {
+                  for (let j = 0; j < teachersName.length; j++) {
+                    if (watchlist[i].idTeacher == teachersName[j]._id) {
+                      watchlist[i].nameTeacher = teachersName[j].fullname;
+                      break;
+                    }
                   }
                 }
-              }
-              const response = Response.successResponse(watchlist);
-              return res.status(200).json(response);
+                const response = Response.successResponse(watchlist);
+                return res.status(200).json(response);
+              });
             });
+        }
+        else {
+
+          const response = Response.falseResponse('User not exists');
+          return res.status(200).json(response);
+        }
+      }
+    });
+});
+
+router.post('/review/:idCourse', authMiddewares, (req, res) => {
+  User.findOne({ _id: req.user.id })
+    .lean()
+    .exec(function (error, doc) {
+      if (error) {
+        const response = Response.falseResponse(error);
+        return res.status(200).json(response);
+      }
+      else {
+        if (doc) {
+          Course.findOne({ _id: req.params.idCourse }).lean().exec((err, course) => {
+            if (course) {
+              let reviewObject = {
+                conmment: req.body.comment,
+                rate: parseInt(req.body.rate),
+                id_user: req.user.id
+              };
+              course.review.push(reviewObject);
+              course.save();
+              reviewObject.fullname = doc.fullname;
+              return res.status(200).json(reviewObject);
+            } else {
+              return res.json({ success: 'fail', error: 'không tìm thấy course với id' });
+            }
           });
         }
         else {
@@ -441,42 +456,7 @@ router.get('/user/watchlist', authMiddewares, (req, res) => {
     });
 });
 
-router.post('/review/:idCourse', authMiddewares,(req,res)=>{
-  User.findOne({ _id: req.user.id })
-    .lean()
-    .exec(function (error, doc) {
-      if (error) {
-        const response = Response.falseResponse(error);
-        return res.status(200).json(response);
-      }
-      else {
-        if (doc) {
-          Course.findOne({_id:req.params.idCourse}).lean().exec((err,course)=>{
-            if(course){
-              let reviewObject={
-                conmment:req.body.comment,
-                rate:parseInt(req.body.rate),
-                id_user:req.user.id
-              }
-              course.review.push(reviewObject);
-              course.save();
-              reviewObject.fullname=doc.fullname;
-              return res.status(200).json(reviewObject);
-            }else{
-              return res.json({success:'fail',error:'không tìm thấy course với id'})
-            }
-          })
-        }
-        else {
-
-          const response = Response.falseResponse('User not exists');
-          return res.status(200).json(response);
-        }
-      }
-    });
-})
-
-router.get('/user/all', authMiddewares,(req,res)=>{
+router.get('/user/all', authMiddewares, (req, res) => {
   if (req.user.type !== 1) {
     const response = Response.falseResponse('User has no permissions');
     return res.status(200).json(response);
@@ -493,11 +473,11 @@ router.get('/user/all', authMiddewares,(req,res)=>{
           User.find({},
             '_id fullname username phone type gender dob email')
             .lean()
-            .exec((err,user)=>{
+            .exec((err, user) => {
 
               const response = Response.successResponse(user);
               return res.status(200).json(response);
-          })
+            });
         }
         else {
 
@@ -506,7 +486,7 @@ router.get('/user/all', authMiddewares,(req,res)=>{
         }
       }
     });
-})
+});
 
 router.delete('/user', authMiddewares, (req, res) => {
   if (req.user.type !== 1) {
@@ -522,11 +502,11 @@ router.delete('/user', authMiddewares, (req, res) => {
       }
       else {
         if (doc) {
-          User.deleteOne({_id: req.body.id})
-            .exec((err,user)=>{
-              const response = Response.successResponse({msg: "Delete success"});
+          User.deleteOne({ _id: req.body.id })
+            .exec((err, user) => {
+              const response = Response.successResponse({ msg: "Delete success" });
               return res.status(200).json(response);
-          })
+            });
         }
         else {
 
