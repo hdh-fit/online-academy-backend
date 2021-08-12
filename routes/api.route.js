@@ -491,7 +491,7 @@ router.get('/user/all', authMiddewares,(req,res)=>{
       else {
         if (doc) {
           User.find({},
-            'fullname username phone type gender dob email')
+            '_id fullname username phone type gender dob email')
             .lean()
             .exec((err,user)=>{
 
