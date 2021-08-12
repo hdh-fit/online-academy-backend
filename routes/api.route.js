@@ -508,4 +508,33 @@ router.get('/user/all', authMiddewares,(req,res)=>{
     });
 })
 
+router.delete('/user', authMiddewares, (req, res) => {
+  if (req.user.type !== 1) {
+    const response = Response.falseResponse('User has no permissions');
+    return res.status(200).json(response);
+  }
+  User.findOne({ _id: req.user.id })
+    .lean()
+    .exec(function (error, doc) {
+      if (error) {
+        const response = Response.falseResponse(error);
+        return res.status(200).json(response);
+      }
+      else {
+        if (doc) {
+          User.deleteOne({_id: req.body.id})
+            .exec((err,user)=>{
+              const response = Response.successResponse({msg: "Delete success"});
+              return res.status(200).json(response);
+          })
+        }
+        else {
+
+          const response = Response.falseResponse('User not exists');
+          return res.status(200).json(response);
+        }
+      }
+    });
+});
+
 module.exports = router;
