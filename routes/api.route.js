@@ -595,4 +595,39 @@ router.get('/getCourseByCategoryId/:idCategory', (req, res) => {
     }
   })
 })
+
+router.post('/addCourse', authMiddewares, (req,res)=>{
+   User.findOne({ _id: req.user.id }).lean()
+    .exec(function (error, doc) {
+      if (error) {
+        const response = Response.falseResponse(error);
+        return res.status(200).json(response);
+      }
+      else {
+        if (doc) {
+            let newCourse=new Course({
+              name: req.body.name,
+              short_described: req.body.short_described,
+              full_described:req.body.full_described,
+              rating: 0,
+              image_link:req.body.image_link,
+              idTeacher: req.user.id,
+              isFinish: false,
+              view: 0,
+              price:parseInt(req.body.price),
+              category: req.body.category,
+              review: [],
+              feedBack: []
+            }).save((err,doc)=>{
+              if(err) return res.json({success:'fail',error:'k add duoc vao mongo'})
+              else return res.json({success:'true',course:doc})
+            })
+        }
+        else {
+          const response = Response.falseResponse('User not exists');
+          return res.status(200).json(response);
+        }
+      }
+    });
+})
 module.exports = router;
