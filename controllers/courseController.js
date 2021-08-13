@@ -3,6 +3,7 @@ const MONGODB_URL = process.env.MONGO_URL;
 const mongoose = require('mongoose');
 const { Category } = require("../models/category.model");
 const { Course } = require("../models/course_model");
+const { User } = require("../models/user.model");
 mongoose.connect(MONGODB_URL, { useNewUrlParser: true, useUnifiedTopology: true });
 
 const searchCourse = (keyword) => {
