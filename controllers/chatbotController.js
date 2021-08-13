@@ -208,7 +208,21 @@ const handlePostback = async (sender_psid, received_postback) => {
 				response = searchOptions;
 				break;
 			case 'category':
-				response = await getCategories();
+				const categories = await getCategories();
+
+				const quick_replies = categories.map(category => (
+					{
+						"content_type": "text",
+						"title": category.label,
+						"payload": category.name,
+					}
+				));
+
+				response = {
+					text: "Xin chọn danh mục:",
+					quick_replies
+				};
+
 				break;
 			default:
 				response = { text: 'Some thing wrong.' };
