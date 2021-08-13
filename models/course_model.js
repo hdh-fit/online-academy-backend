@@ -7,7 +7,7 @@ const courseSchema = new mongoose.Schema({
 	rating: Number,
 	image_link: String,
 	idTeacher: String,
-	dateCourse: {type: Date, default: Date.now},
+	dateCourse: { type: Date, default: Date.now },
 	isFinish: Boolean,
 	view: Number,
 	price: Number,
@@ -15,8 +15,7 @@ const courseSchema = new mongoose.Schema({
 	review: [{ comment: String, id_user: mongoose.ObjectId, rate: Number, date: { type: Date, default: Date.now } }],
 	feedBack: [{ type: String }]
 });
+const Course = mongoose.model('Course', courseSchema);
 
-module.exports = {
-	Course: mongoose.model('Course', courseSchema),
-};
+module.exports = { Course };
 

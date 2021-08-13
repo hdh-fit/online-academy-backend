@@ -6,6 +6,7 @@ const Response = require('../jsonResponse/jsonResponse');
 const request = require('request');
 const mongoose = require('mongoose');
 const { Course } = require("../models/course_model");
+const { Category } = require("../models/category.model");
 mongoose.connect(MONGODB_URL, { useNewUrlParser: true, useUnifiedTopology: true });
 
 const optionsResponse = {
@@ -43,68 +44,6 @@ const optionsResponse = {
 
 const searchOptions = {
 	"text": `Vui lòng gửi từ khoá cần tìm kiếm theo cú pháp @<X> với X là từ khoá cần tìm kiếm. Ví dụ: @android.`
-};
-
-const searchResponse = {
-	"attachment": {
-		"type": "template",
-		"payload": {
-			"template_type": "generic",
-			"elements": [
-				{
-					"title": "Khoá học HTML",
-					"image_url": "https://codebrainer.azureedge.net/images/what-is-html.jpg",
-					"subtitle": "Nguyễn Thị B",
-					"default_action": {
-						"type": "web_url",
-						"url": "https://fitstudy.netlify.app/course/60febcd46d6d78006fab4d93",
-						"webview_height_ratio": "tall"
-					},
-					"buttons": [
-						{
-							"type": "web_url",
-							"url": "https://fitstudy.netlify.app/course/60febcd46d6d78006fab4d93",
-							"title": "Xem chi tiết khoá học"
-						}
-					]
-				},
-				{
-					"title": "Lập trình NodeJs cơ bản",
-					"image_url": "https://tuanntblog.com/wp-content/uploads/2018/11/nodejs-new-pantone-black.png",
-					"subtitle": "Nguyễn Thị B",
-					"default_action": {
-						"type": "web_url",
-						"url": "https://fitstudy.netlify.app/course/60febcd46d6d78006fab4d90",
-						"webview_height_ratio": "tall"
-					},
-					"buttons": [
-						{
-							"type": "web_url",
-							"url": "https://fitstudy.netlify.app/course/60febcd46d6d78006fab4d90",
-							"title": "Xem chi tiết khoá học"
-						}
-					]
-				},
-				{
-					"title": "Khóa học JavaScript",
-					"image_url": "https://wiki.tino.org/wp-content/uploads/2020/10/JS-750x375.jpg",
-					"subtitle": "Nguyễn Thị B",
-					"default_action": {
-						"type": "web_url",
-						"url": "https://fitstudy.netlify.app/course/60febcd46d6d78006fab4d95",
-						"webview_height_ratio": "tall"
-					},
-					"buttons": [
-						{
-							"type": "web_url",
-							"url": "https://fitstudy.netlify.app/course/60febcd46d6d78006fab4d95",
-							"title": "Xem chi tiết khoá học"
-						}
-					]
-				}
-			]
-		}
-	}
 };
 
 
@@ -256,26 +195,43 @@ const handleMessage = (sender_psid, received_message) => {
 };
 
 // Handles messaging_postbacks events
-const handlePostback = (sender_psid, received_postback) => {
-	let response;
+const handlePostback = async (sender_psid, received_postback) => {
+	try {
+		let response;
+		let payload = received_postback.payload;
 
-	// Get the payload for the postback
-	let payload = received_postback.payload;
-	switch (payload) {
-		case 'start':
-			response = optionsResponse;
-			break;
-		case 'search':
-			response = searchOptions;
-			break;
-		case 'category':
-			response = optionsResponse;
-			break;
-		default:
-			break;
+		switch (payload) {
+			case 'start':
+				response = optionsResponse;
+				break;
+			case 'search':
+				response = searchOptions;
+				break;
+			case 'category':
+				response = await getCategories();
+				break;
+			default:
+				response = { text: 'Some thing wrong.' };
+				break;
+		}
+
+		callSendAPI(sender_psid, response);
+	} catch (error) {
+		console.log(error);
 	}
 
-	callSendAPI(sender_psid, response);
+};
+
+const getCategories = () => {
+	return new Promise((resolve, reject) => {
+		Category.find({}, (err, docs) => {
+			if (err) {
+				reject(err);
+			} else {
+				resolve(docs);
+			}
+		});
+	});
 };
 
 // Sends response messages via the Send API
@@ -313,47 +269,30 @@ const callSendAPI = (sender_psid, response) => {
 	});
 };
 
-const check = (req, res) => {
-	const searchKey = req.params.text;
-
-	Course.find({ name: { $regex: new RegExp(searchKey, 'i') } }).lean().exec((err, docs) => {
-		const elements = docs.map(course => (
-			{
-				title: course.name,
-				image_url: course.image_link,
-				subtitle: course.short_described,
-				default_action: {
-					type: "web_url",
-					url: `https://fitstudy.netlify.app/course/${course._id}`,
-					webview_height_ratio: "tall"
-				},
-				buttons: [
-					{
-						type: "web_url",
-						url: `https://fitstudy.netlify.app/course/${course._id}`,
-						title: "Xem chi tiết khoá học"
-					}
-				]
-			}
-		));
-
-		const response = {
-			"attachment": {
-				"type": "template",
-				"payload": {
-					"template_type": "generic",
-					"elements": elements
+const testEndpoint = (req, res) => {
+	getCategories()
+		.then(categories => {
+			const quick_replies = categories.map(category => (
+				{
+					"content_type": "text",
+					"title": category.label,
+					"payload": category.name,
 				}
-			}
-		};
+			));
 
-		res.status(200).json(response);
-	});
+			const response = {
+				text: "Xin chọn danh mục:",
+				quick_replies
+			};
+
+			res.status(200).json(response);
+		})
+		.catch();
 };
 
 module.exports = {
 	postWebHook,
 	getWebHook,
-	check
+	testEndpoint
 };
 
