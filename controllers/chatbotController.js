@@ -7,6 +7,7 @@ const request = require('request');
 const mongoose = require('mongoose');
 const { Course } = require("../models/course_model");
 const { Category } = require("../models/category.model");
+const { getCourseByCategoryName } = require("./courseController");
 mongoose.connect(MONGODB_URL, { useNewUrlParser: true, useUnifiedTopology: true });
 
 const optionsResponse = {
@@ -152,12 +153,53 @@ const handleMessage = (sender_psid, received_message) => {
 			});
 
 		} else {
-			switch (messText) {
-				case 'start':
-					callSendAPI(sender_psid, optionsResponse);
-					break;
-				default:
-					return;
+			if (received_message.quick_reply) {
+				getCourseByCategoryName(received_message.quick_reply.payload)
+					.then(courses => {
+						const elements = courses.map(course => (
+							{
+								title: course.name,
+								image_url: course.image_link,
+								subtitle: course.short_described,
+								default_action: {
+									type: "web_url",
+									url: `https://fitstudy.netlify.app/course/${course._id}`,
+									webview_height_ratio: "tall"
+								},
+								buttons: [
+									{
+										type: "web_url",
+										url: `https://fitstudy.netlify.app/course/${course._id}`,
+										title: "Xem chi tiết khoá học"
+									}
+								]
+							}
+						));
+
+						if (elements.length === 0) {
+							response = { text: 'Không tìm thấy kết quả phù hợp.' };
+						} else {
+							response = {
+								"attachment": {
+									"type": "template",
+									"payload": {
+										"template_type": "generic",
+										"elements": elements
+									}
+								}
+							};
+						}
+						callSendAPI(sender_psid, response);
+					})
+					.catch(err => console.log(err));
+			} else {
+				switch (messText) {
+					case 'start':
+						callSendAPI(sender_psid, optionsResponse);
+						break;
+					default:
+						return;
+				}
 			}
 		}
 	} else if (received_message.attachments) {
