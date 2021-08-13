@@ -1,0 +1,16 @@
+{
+    "type": "object",
+    "required": [
+      "name",
+      "label"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "name": {
+        "type": "string"
+      },
+      "label": {
+        "type": "string"
+      }
+    }
+  }

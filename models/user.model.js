@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 
-const { Course } = require("../models/course_model");
+const { Course } = require("./course_model");
 const mongoose = require('mongoose');
 mongoose.set('useFindAndModify', false);
 const userSchema = new mongoose.Schema({

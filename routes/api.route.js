@@ -5,12 +5,16 @@ const bcrypt = require('bcryptjs');
 const router = express.Router();
 const { valid } = require('../middlewares/vilidate.mdw');
 const validUserSchema = require('../schemas/user.json');
+const validCategorySchema = require('../schemas/category.json');
 const jwt = require('jsonwebtoken');
 const authMiddewares = require('../middlewares/auth.mdw');
 const Response = require('../jsonResponse/jsonResponse');
 const { Course } = require("../models/course_model");
 const UserModel = require("../models/user.model");
 const User = UserModel.User;
+const CategoryModel = require('../models/category.model');
+const Category= CategoryModel.Category;
+
 let mongoose = require('mongoose');
 mongoose.connect(MONGODB_URL, { useNewUrlParser: true, useUnifiedTopology: true });
 
@@ -20,12 +24,6 @@ const videoSchema = new mongoose.Schema({
   link: String
 });
 const Video = mongoose.model('Video', videoSchema);
-
-const categorySchema = new mongoose.Schema({
-  name:String,
-  label:String
-});
-const Category = mongoose.model('Category', categorySchema);
 
 //lấy tất cả danh sách khóa học
 router.get('/course/all', (req, res) => {
@@ -519,6 +517,78 @@ router.post('/addCourse', authMiddewares, (req,res)=>{
         }
       }
     });
+})
+
+router.post('/addCategory', authMiddewares, valid(validCategorySchema), async (req,res)=>{
+  if (req.user.type !== 3) {
+    const response = Response.falseResponse('User has no permissions');
+    return res.status(200).json(response);
+  }
+
+  const checkCategory = await CategoryModel.findCategoryByName(req.body.name);
+
+  if (checkCategory) {
+    const response = Response.falseResponse('Category already exists');
+    return res.status(200).json(response);
+  }
+
+  const user = await UserModel.findUserById(req.user.id);
+
+  if (user) {
+      const category = await CategoryModel.addCategory(req.body);
+      const response = Response.successResponse(category);
+      return res.status(200).json(response);
+  }
+  else {
+    const response = Response.falseResponse('User not exists');
+    return res.status(200).json(response);
+  }
+})
+
+router.delete('/categoryByName', authMiddewares, async (req,res)=>{
+  if (req.user.type !== 3) {
+    const response = Response.falseResponse('User has no permissions');
+    return res.status(200).json(response);
+  }
+
+  const user = await UserModel.findUserById(req.user.id);
+
+  if (user) {
+      const del = await CategoryModel.deleteByName(req.body.name);
+      if (del) {
+        const response = Response.successResponse({ msg: "Delete success" });
+        return res.status(200).json(response);
+      }
+      const response = Response.falseResponse('Delete fail');
+      return res.status(200).json(response);
+  }
+  else {
+    const response = Response.falseResponse('User not exists');
+    return res.status(200).json(response);
+  }
+})
+
+router.delete('/categoryById', authMiddewares, async (req,res)=>{
+  if (req.user.type !== 3) {
+    const response = Response.falseResponse('User has no permissions');
+    return res.status(200).json(response);
+  }
+
+  const user = await UserModel.findUserById(req.user.id);
+
+  if (user) {
+    const del = await CategoryModel.deleteById(req.body.id);
+    if (del) {
+      const response = Response.successResponse({ msg: "Delete success" });
+      return res.status(200).json(response);
+    }
+    const response = Response.falseResponse('Delete fail');
+    return res.status(200).json(response);
+  }
+  else {
+    const response = Response.falseResponse('User not exists');
+    return res.status(200).json(response);
+  }
 })
 
 module.exports = router;
