@@ -9,24 +9,10 @@ const jwt = require('jsonwebtoken');
 const authMiddewares = require('../middlewares/auth.mdw');
 const Response = require('../jsonResponse/jsonResponse');
 const { Course } = require("../models/course_model");
+const UserModel = require("../models/user.model");
+const User = UserModel.User;
 let mongoose = require('mongoose');
 mongoose.connect(MONGODB_URL, { useNewUrlParser: true, useUnifiedTopology: true });
-
-const userSchema = new mongoose.Schema({
-  stt: String,
-  fullname: String,
-  username: String,
-  password: String,
-  phone: String,
-  type: Number,
-  gender: String,
-  dob: Date,
-  describe: String,
-  level: String,
-  email: String,
-  watchlist: [String]
-});
-const User = mongoose.model('User', userSchema);
 
 const videoSchema = new mongoose.Schema({
   name: String,
@@ -190,241 +176,143 @@ router.get('/course/detail/:id', (req, res) => {
     });
 });
 
-router.post('/user/register', valid(validUserSchema), (req, res) => {
-  const newuser = new User(req.body);
-  User.findOne({ username: newuser.username })
-    .exec(function (error, doc) {
-      console.log(error);
-      if (error) {
-        const response = Response.falseResponse(error);
-        return res.status(304).json(response);
-      }
-      else {
-        if (doc) {
-          const response = Response.falseResponse('User already exists');
-          return res.status(200).json(response);
-        }
-        else {
-          newuser.password = bcrypt.hashSync(newuser.password, 10);
-          newuser.save();
-          const user = newuser.toObject();
-          delete user.password;
-          const response = Response.successResponse(user);
-          return res.status(200).json(response);
-        }
-      }
-    });
+router.post('/user/register', valid(validUserSchema), async (req, res) => {
+
+  const newuser = req.body;
+
+  const checkUsername = await UserModel.findUserByUsername(newuser.username);
+
+  if (checkUsername) {
+    const response = Response.falseResponse('User already exists');
+    return res.status(200).json(response);
+  }
+
+  const user = await UserModel.addNewUser(newuser);
+
+  if (user) {
+    delete user.password;
+    const response = Response.successResponse(user);
+    return res.status(200).json(response);
+  }
+
+  const response = Response.falseResponse('Cant register this user');
+  return res.status(200).json(response);
 });
 
-router.post('/user/login', (req, res) => {
+router.post('/user/login', async (req, res) => {
   const user = req.body;
-  User.findOne({ username: user.username })
-    .exec(function (error, doc) {
-      console.log(error);
-      if (error) {
-        const response = Response.falseResponse(error);
-        return res.status(200).json(response);
-      }
-      else {
-        if (doc) {
 
-          if (!bcrypt.compareSync(user.password, doc.password)) {
-            return res.json({
-              authenticated: false
-            });
-          }
+  const checkUsername = await UserModel.findUserByUsername(user.username);
 
-          const payload = {
-            id: doc.id,
-            type: doc.type
-          };
+  if (checkUsername == null) {
+    const response = Response.falseResponse('User not exists');
+    return res.status(200).json(response);
+  }
 
-          console.log(payload);
-
-          const opts = {
-            expiresIn: 36000
-          };
-
-          const accessToken = jwt.sign(payload, 'WEDNC2021', opts);
-
-          const data = {
-            authenticated: true,
-            accessToken: accessToken
-          };
-
-          const response = Response.successResponse(data);
-          return res.status(200).json(response);
-        }
-        else {
-          const response = Response.falseResponse('User not exists');
-          return res.status(200).json(response);
-        }
-      }
+  if (!bcrypt.compareSync(user.password, checkUsername.password)) {
+    return res.json({
+      authenticated: false
     });
+  }
+
+  const payload = {
+    id: checkUsername._id,
+    type: checkUsername.type
+  };
+
+  console.log(payload);
+
+  const opts = {
+    expiresIn: 36000
+  };
+
+  const accessToken = jwt.sign(payload, 'WEDNC2021', opts);
+
+  const data = {
+    authenticated: true,
+    accessToken: accessToken
+  };
+
+  const response = Response.successResponse(data);
+  return res.status(200).json(response);
 });
 
-router.get('/user/info', authMiddewares, (req, res) => {
+router.get('/user/info', authMiddewares, async (req, res) => {
+  const user = await UserModel.findUserById(req.user.id);
 
-  User.findOne({ _id: req.user.id })
-    .exec(function (error, doc) {
-      console.log(error);
-      if (error) {
-        const response = Response.falseResponse(error);
-        return res.status(200).json(response);
-      }
-      else {
-
-        if (doc) {
-          doc = doc.toObject();
-          delete doc.password;
-          const response = Response.successResponse(doc);
-          return res.status(200).json(response);
-        }
-        else {
-          const response = Response.falseResponse('User not exists');
-          return res.status(200).json(response);
-        }
-      }
-    });
+  if (user) {
+    delete user.password;
+    const response = Response.successResponse(user);
+    return res.status(200).json(response);
+  }
+  else {
+    const response = Response.falseResponse('User not exists');
+    return res.status(200).json(response);
+  }
+  
 });
 
-router.put('/user/info', authMiddewares, (req, res) => {
-  User.findOne({ _id: req.user.id })
-    .exec(function (error, doc) {
-      console.log(error);
-      if (error) {
-        const response = Response.falseResponse(error);
-        return res.status(200).json(response);
-      }
-      else {
-        if (doc) {
-          doc.fullname = req.body.fullname;
-          doc.phone = req.body.phone;
-          doc.gender = req.body.gender;
-          doc.dob = req.body.dob;
-          doc.describe = req.body.describe;
-          doc.level = req.body.level;
-          doc.email = req.body.email;
-          doc.save();
+router.put('/user/info', authMiddewares, async (req, res) => {
+  const user = await UserModel.findUserById(req.user.id);
 
-          doc = doc.toObject();
-          delete doc.password;
-          const response = Response.successResponse(doc);
-          return res.status(200).json(response);
-        }
-        else {
-          const response = Response.falseResponse('User not exists');
-          return res.status(200).json(response);
-        }
-      }
-    });
+  if (user) {
+    const data = await UserModel.updateUser(user._id, req.body)
+    const response = Response.successResponse(data);
+    return res.status(200).json(response);
+  }
+  else {
+    const response = Response.falseResponse('User not exists');
+    return res.status(200).json(response);
+  }
 });
 
-router.put('/user/password', authMiddewares, (req, res) => {
-  User.findOne({ _id: req.user.id })
-    .exec(function (error, doc) {
-      console.log(error);
-      if (error) {
-        const response = Response.falseResponse(error);
-        return res.status(200).json(response);
-      }
-      else {
-        if (doc) {
+router.put('/user/password', authMiddewares, async (req, res) => {
+  const user = await UserModel.findUserById(req.user.id);
 
-          if (!bcrypt.compareSync(req.body.password, doc.password)) {
-            const response = Response.falseResponse('Incorrect password');
-            return res.status(200).json(response);
-          }
+  if (user) {
+    if (!bcrypt.compareSync(req.body.password, user.password)) {
+      const response = Response.falseResponse('Incorrect password');
+      return res.status(200).json(response);
+    }
 
-          doc.password = bcrypt.hashSync(req.body.newpassword, 10);
-          doc.save();
+    const password = bcrypt.hashSync(req.body.newpassword, 10);
 
-          const response = Response.successResponse({ message: 'Change password successfully' });
-          return res.status(200).json(response);
+    const data = await UserModel.updateUserPassword(user._id, password)
 
-        }
-        else {
-          const response = Response.falseResponse('User not exists');
-          return res.status(200).json(response);
-        }
-      }
-    });
+    const response = Response.successResponse({ message: 'Change password successfully' });
+    return res.status(200).json(response);
+    
+  }
+  else {
+    const response = Response.falseResponse('User not exists');
+    return res.status(200).json(response);
+  }
 });
 
-router.post('/user/watchlist', authMiddewares, (req, res) => {
+router.post('/user/watchlist', authMiddewares, async (req, res) => {
   course = req.body.course;
-  User.findOne({ _id: req.user.id })
-    .exec(function (error, doc) {
-      if (error) {
-        const response = Response.falseResponse(error);
-        return res.status(200).json(response);
-      }
-      else {
-        if (doc) {
-          if (doc.watchlist.indexOf(course) > -1) {
-            doc.watchlist.pull(course);
-          }
-          else doc.watchlist.push(course);
-          doc.save();
-          const response = Response.successResponse(doc);
-          return res.status(200).json(response);
-        }
-        else {
-          const response = Response.falseResponse('User not exists');
-          return res.status(200).json(response);
-        }
-      }
-    });
+
+  const watchlist = await UserModel.addWatchlist(req.user.id, course);
+  if (watchlist) {
+      const response = Response.successResponse(watchlist);
+      return res.status(200).json(response);
+  }
+  else {
+    const response = Response.falseResponse('Add watchlist false');
+    return res.status(200).json(response);
+  }
 });
 
-router.get('/user/watchlist', authMiddewares, (req, res) => {
-  User.findOne({ _id: req.user.id })
-    .lean()
-    .exec(function (error, doc) {
-      if (error) {
-        const response = Response.falseResponse(error);
-        return res.status(200).json(response);
-      }
-      else {
-        if (doc) {
-
-          Course.find({
-            '_id': {
-              $in: doc.watchlist
-            }
-          },
-            '_id name rating image_link dateCourse isFinish view price category idTeacher')
-            .lean()
-            .exec(function (error, watchlist) {
-              let teacherId = [];
-              for (let i = 0; i < watchlist.length; i++) {
-                teacherId.push(watchlist[i].idTeacher);
-              }
-              User.find({
-                '_id': {
-                  $in: teacherId
-                }
-              }).select('fullname').exec(function (err, teachersName) {
-                for (let i = 0; i < watchlist.length; i++) {
-                  for (let j = 0; j < teachersName.length; j++) {
-                    if (watchlist[i].idTeacher == teachersName[j]._id) {
-                      watchlist[i].nameTeacher = teachersName[j].fullname;
-                      break;
-                    }
-                  }
-                }
-                const response = Response.successResponse(watchlist);
-                return res.status(200).json(response);
-              });
-            });
-        }
-        else {
-
-          const response = Response.falseResponse('User not exists');
-          return res.status(200).json(response);
-        }
-      }
-    });
+router.get('/user/watchlist', authMiddewares, async (req, res) => {
+  const watchlist = await UserModel.getWatchlist(req.user.id);
+  if (watchlist) {
+      const response = Response.successResponse(watchlist);
+      return res.status(200).json(response);
+  }
+  else {
+    const response = Response.falseResponse('Get watchlist false');
+    return res.status(200).json(response);
+  }
 });
 
 router.post('/review/:idCourse', authMiddewares, (req, res) => {
@@ -462,71 +350,72 @@ router.post('/review/:idCourse', authMiddewares, (req, res) => {
     });
 });
 
-router.get('/user/all', authMiddewares, (req, res) => {
-  if (req.user.type !== 1) {
+router.get('/user/all', authMiddewares, async (req, res) => {
+  if (req.user.type !== 3) {
     const response = Response.falseResponse('User has no permissions');
     return res.status(200).json(response);
   }
-  User.findOne({ _id: req.user.id })
-    .lean()
-    .exec(function (error, doc) {
-      if (error) {
-        const response = Response.falseResponse(error);
-        return res.status(200).json(response);
-      }
-      else {
-        if (doc) {
-          User.find({},
-            '_id fullname username phone type gender dob email')
-            .lean()
-            .exec((err, user) => {
-
-              const response = Response.successResponse(user);
-              return res.status(200).json(response);
-            });
-        }
-        else {
-
-          const response = Response.falseResponse('User not exists');
-          return res.status(200).json(response);
-        }
-      }
-    });
+  const user = await UserModel.findUserById(req.user.id);
+  if (user) {
+      const all = await UserModel.getAllUser();
+      const response = Response.successResponse(all);
+      return res.status(200).json(response);
+  }
+  else {
+    const response = Response.falseResponse('User not exists');
+    return res.status(200).json(response);
+  }
 });
 
-router.delete('/user', authMiddewares, (req, res) => {
-  if (req.user.type !== 1) {
+router.get('/user/:id', authMiddewares, async (req, res) => {
+  if (req.user.type !== 3) {
     const response = Response.falseResponse('User has no permissions');
     return res.status(200).json(response);
   }
-  User.findOne({ _id: req.user.id })
-    .lean()
-    .exec(function (error, doc) {
-      if (error) {
-        const response = Response.falseResponse(error);
-        return res.status(200).json(response);
-      }
-      else {
-        if (doc) {
-          User.deleteOne({ _id: req.body.id })
-            .exec((err, user) => {
-              const response = Response.successResponse({ msg: "Delete success" });
-              return res.status(200).json(response);
-            });
-        }
-        else {
 
-          const response = Response.falseResponse('User not exists');
-          return res.status(200).json(response);
-        }
-      }
-    });
+  const user = await UserModel.findUserById(req.user.id);
+  if (user) {
+      const data = await UserModel.findUserById(req.params.id);
+      delete data.password;
+      const response = Response.successResponse(data);
+      return res.status(200).json(response);
+  }
+  else {
+    const response = Response.falseResponse('User not exists');
+    return res.status(200).json(response);
+  }
 });
+
+router.delete('/user', authMiddewares, async (req, res) => {
+  if (req.user.type !== 3) {
+    const response = Response.falseResponse('User has no permissions');
+    return res.status(200).json(response);
+  }
+
+  const user = await UserModel.findUserById(req.user.id);
+
+  if (req.user.id === req.body.id) {
+    const response = Response.falseResponse('Can not delete this user');
+    return res.status(200).json(response);
+  }
+
+  if (user) {
+      await UserModel.deleteById(req.body.id);
+      const response = Response.successResponse({ msg: "Delete success" });
+      return res.status(200).json(response);
+  }
+  else {
+    const response = Response.falseResponse('User not exists');
+    return res.status(200).json(response);
+  }
+});
+
 router.get('/getCategoryAll', (req, res) => {
   Category.find({}, (err, docs) => {
     return res.json({ success: 'true', categories: docs })
   })
 })
+
 router.get('/getCourseByCategoryName/:name', (req, res) => {
   Course.find({ category: req.params.name }).lean()
     .exec(function (error, docs) {
@@ -558,6 +447,7 @@ router.get('/getCourseByCategoryName/:name', (req, res) => {
       }
     });
 })
+
 router.get('/getCourseByCategoryId/:idCategory', (req, res) => {
   Category.findOne({ _id: req.params.idCategory }, (err, doc) => {
     if(doc)
@@ -630,4 +520,5 @@ router.post('/addCourse', authMiddewares, (req,res)=>{
       }
     });
 })
+
 module.exports = router;
