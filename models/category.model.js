@@ -35,3 +35,4 @@ module.exports = {
         return Category.deleteOne({ _id: id }).exec();
     },
 }
+

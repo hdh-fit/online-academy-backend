@@ -9,15 +9,14 @@ const validCategorySchema = require('../schemas/category.json');
 const jwt = require('jsonwebtoken');
 const authMiddewares = require('../middlewares/auth.mdw');
 const Response = require('../jsonResponse/jsonResponse');
-const { Course } = require("../models/course_model");
 const UserModel = require("../models/user.model");
 const User = UserModel.User;
 const CategoryModel = require('../models/category.model');
-const Category= CategoryModel.Category;
-
+const { Category } = require("../models/category.model");
+const { Course } = require("../models/course_model");
 let mongoose = require('mongoose');
-mongoose.connect(MONGODB_URL, { useNewUrlParser: true, useUnifiedTopology: true });
 
+mongoose.connect(MONGODB_URL, { useNewUrlParser: true, useUnifiedTopology: true });
 const videoSchema = new mongoose.Schema({
   name: String,
   id_course: String,
@@ -247,7 +246,7 @@ router.get('/user/info', authMiddewares, async (req, res) => {
     const response = Response.falseResponse('User not exists');
     return res.status(200).json(response);
   }
-  
+
 });
 
 router.put('/user/info', authMiddewares, async (req, res) => {
@@ -279,7 +278,7 @@ router.put('/user/password', authMiddewares, async (req, res) => {
 
     const response = Response.successResponse({ message: 'Change password successfully' });
     return res.status(200).json(response);
-    
+
   }
   else {
     const response = Response.falseResponse('User not exists');
