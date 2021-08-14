@@ -34,5 +34,20 @@ module.exports = {
         }
         return Category.deleteOne({ _id: id }).exec();
     },
+
+    async updateCategory(category) {
+        const updates = {
+            name: category.name,
+            label: category.label,
+        }
+
+        const data = await Category.findOneAndUpdate(
+            {_id: category.id}, 
+            {$set: updates},
+            { new: true }
+        );
+
+        return data;
+    },
 }
 
