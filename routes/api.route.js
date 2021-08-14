@@ -316,7 +316,7 @@ router.post('/review/:idCourse', authMiddewares, (req, res) => {
           Course.findOne({ _id: req.params.idCourse }).exec((err, course) => {
             if (course) {
               let reviewObject = {
-                conmment: req.body.comment,
+                comment: req.body.comment,
                 rate: parseInt(req.body.rate),
                 id_user: req.user.id
               };
