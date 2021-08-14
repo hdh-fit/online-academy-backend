@@ -15,7 +15,8 @@ const userSchema = new mongoose.Schema({
     describe: String,
     level: String,
     email: String,
-    watchlist: [String]
+    watchlist: [String],
+    listCourse: [String]
 });
 const User = mongoose.model('User', userSchema);
 
@@ -118,7 +119,35 @@ module.exports = {
             .exec();
     },
 
-    deleteById(id) {
+    async deleteById(id) {
+        const course = await Course.find({ listStudent: id });
+        console.log(course);
+        for (let i = 0; i < course.length; i++) {
+            course[i].listStudent.pull(id);
+            await course[i].save();
+        }
+        
         return User.deleteOne({ _id: id }).exec();
+    },
+
+    async joinCourse(id, idCourse) {
+        const user = await User.findOne({ _id: id });
+        const course = await Course.findOne({ _id: idCourse });
+        if (user && course) {
+            if (user.listCourse.indexOf(idCourse) > -1) {
+                user.listCourse.pull(idCourse);
+                course.listStudent.pull(id);
+            }
+            else {
+                user.listCourse.push(idCourse);
+                course.listStudent.push(id);
+            }
+            await user.save();
+            await course.save();
+            return user;
+            }
+        else {
+            return false;
+        }
     }
 };

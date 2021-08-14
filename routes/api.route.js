@@ -616,4 +616,23 @@ router.put('/category', authMiddewares, async (req, res) => {
   }
 });
 
+router.post('/user/joinCourse', authMiddewares, async (req, res) => {
+  if (req.user.type !== 1) {
+    const response = Response.falseResponse('User has no permissions');
+    return res.status(200).json(response);
+  }
+
+  const user = await UserModel.findUserById(req.user.id);
+  if (user) {
+      const data = await UserModel.joinCourse(user._id, req.body.idcourse);
+      delete data.password;
+      const response = Response.successResponse(data);
+      return res.status(200).json(response);
+  }
+  else {
+    const response = Response.falseResponse('User not exists');
+    return res.status(200).json(response);
+  }
+});
+
 module.exports = router;

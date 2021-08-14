@@ -13,7 +13,8 @@ const courseSchema = new mongoose.Schema({
 	price: Number,
 	category: String,
 	review: [{ comment: String, id_user: mongoose.ObjectId, rate: Number, date: { type: Date, default: Date.now } }],
-	feedBack: [{ type: String }]
+	feedBack: [{ type: String }],
+	listStudent: [String]
 });
 const Course = mongoose.model('Course', courseSchema);
 
