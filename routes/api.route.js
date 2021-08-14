@@ -370,6 +370,18 @@ router.get('/user/all', authMiddewares, async (req, res) => {
   }
 });
 
+router.get('/user/listCourse', authMiddewares, async (req, res) => {
+  const Courselist = await UserModel.getCourselist(req.user.id);
+  if (Courselist) {
+    const response = Response.successResponse(Courselist);
+    return res.status(200).json(response);
+  }
+  else {
+    const response = Response.falseResponse('Get Courselist false');
+    return res.status(200).json(response);
+  }
+});
+
 router.get('/user/:id', authMiddewares, async (req, res) => {
   if (req.user.type !== 3) {
     const response = Response.falseResponse('User has no permissions');
@@ -676,18 +688,6 @@ router.get('/getBestCourses', (req, res) => {
         });
       }
     });
-});
-
-router.get('/user/listCourse', authMiddewares, async (req, res) => {
-  const Courselist = await UserModel.getCourselist(req.user.id);
-  if (Courselist) {
-    const response = Response.successResponse(Courselist);
-    return res.status(200).json(response);
-  }
-  else {
-    const response = Response.falseResponse('Get Courselist false');
-    return res.status(200).json(response);
-  }
 });
 
 module.exports = router;
