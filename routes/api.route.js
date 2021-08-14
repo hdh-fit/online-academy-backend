@@ -330,7 +330,7 @@ router.post('/review/:idCourse', authMiddewares, (req, res) => {
                 course.save();
                 const data = course.review[course.review.length-1].toObject();
                 data.fullname = doc.fullname;
-                const response = Response.successResponse(data);
+                const response = Response.successResponse({review:data, courseRating:course.rating});
                 return res.status(200).json(response);
               } else {
                 const response = Response.falseResponse('không tìm thấy course với id');
