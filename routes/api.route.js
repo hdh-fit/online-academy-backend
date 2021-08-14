@@ -1,5 +1,4 @@
 require("dotenv").config();
-const MONGODB_URL = process.env.MONGO_URL;
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const router = express.Router();
@@ -13,17 +12,8 @@ const UserModel = require("../models/user.model");
 const User = UserModel.User;
 const CategoryModel = require('../models/category.model');
 const { Category } = require("../models/category.model");
-const { Course } = require("../models/course_model");
-let mongoose = require('mongoose');
+const { Course, Video } = require("../models/course_model");
 const courseController = require("../controllers/courseController");
-
-mongoose.connect(MONGODB_URL, { useNewUrlParser: true, useUnifiedTopology: true });
-const videoSchema = new mongoose.Schema({
-  name: String,
-  id_course: String,
-  link: String
-});
-const Video = mongoose.model('Video', videoSchema);
 
 //lấy tất cả danh sách khóa học
 router.get('/course/all', (req, res) => {
@@ -254,7 +244,7 @@ router.put('/user/info', authMiddewares, async (req, res) => {
   const user = await UserModel.findUserById(req.user.id);
 
   if (user) {
-    const data = await UserModel.updateUser(user._id, req.body)
+    const data = await UserModel.updateUser(user._id, req.body);
     const response = Response.successResponse(data);
     return res.status(200).json(response);
   }
@@ -275,7 +265,7 @@ router.put('/user/password', authMiddewares, async (req, res) => {
 
     const password = bcrypt.hashSync(req.body.newpassword, 10);
 
-    const data = await UserModel.updateUserPassword(user._id, password)
+    const data = await UserModel.updateUserPassword(user._id, password);
 
     const response = Response.successResponse({ message: 'Change password successfully' });
     return res.status(200).json(response);
@@ -292,8 +282,8 @@ router.post('/user/watchlist', authMiddewares, async (req, res) => {
 
   const watchlist = await UserModel.addWatchlist(req.user.id, course);
   if (watchlist) {
-      const response = Response.successResponse(watchlist);
-      return res.status(200).json(response);
+    const response = Response.successResponse(watchlist);
+    return res.status(200).json(response);
   }
   else {
     const response = Response.falseResponse('Add watchlist false');
@@ -304,8 +294,8 @@ router.post('/user/watchlist', authMiddewares, async (req, res) => {
 router.get('/user/watchlist', authMiddewares, async (req, res) => {
   const watchlist = await UserModel.getWatchlist(req.user.id);
   if (watchlist) {
-      const response = Response.successResponse(watchlist);
-      return res.status(200).json(response);
+    const response = Response.successResponse(watchlist);
+    return res.status(200).json(response);
   }
   else {
     const response = Response.falseResponse('Get watchlist false');
@@ -355,9 +345,9 @@ router.get('/user/all', authMiddewares, async (req, res) => {
   }
   const user = await UserModel.findUserById(req.user.id);
   if (user) {
-      const all = await UserModel.getAllUser();
-      const response = Response.successResponse(all);
-      return res.status(200).json(response);
+    const all = await UserModel.getAllUser();
+    const response = Response.successResponse(all);
+    return res.status(200).json(response);
   }
   else {
     const response = Response.falseResponse('User not exists');
@@ -373,10 +363,10 @@ router.get('/user/:id', authMiddewares, async (req, res) => {
 
   const user = await UserModel.findUserById(req.user.id);
   if (user) {
-      const data = await UserModel.findUserById(req.params.id);
-      delete data.password;
-      const response = Response.successResponse(data);
-      return res.status(200).json(response);
+    const data = await UserModel.findUserById(req.params.id);
+    delete data.password;
+    const response = Response.successResponse(data);
+    return res.status(200).json(response);
   }
   else {
     const response = Response.falseResponse('User not exists');
@@ -398,9 +388,9 @@ router.delete('/user', authMiddewares, async (req, res) => {
   }
 
   if (user) {
-      await UserModel.deleteById(req.body.id);
-      const response = Response.successResponse({ msg: "Delete success" });
-      return res.status(200).json(response);
+    await UserModel.deleteById(req.body.id);
+    const response = Response.successResponse({ msg: "Delete success" });
+    return res.status(200).json(response);
   }
   else {
     const response = Response.falseResponse('User not exists');
@@ -410,9 +400,9 @@ router.delete('/user', authMiddewares, async (req, res) => {
 
 router.get('/getCategoryAll', (req, res) => {
   Category.find({}, (err, docs) => {
-    return res.json({ success: 'true', categories: docs })
-  })
-})
+    return res.json({ success: 'true', categories: docs });
+  });
+});
 
 router.get('/getCourseByCategoryName/:name', (req, res) => {
   Course.find({ category: req.params.name }).lean()
@@ -444,48 +434,48 @@ router.get('/getCourseByCategoryName/:name', (req, res) => {
         });
       }
     });
-})
+});
 
 router.get('/getCourseByCategoryId/:idCategory', (req, res) => {
   Category.findOne({ _id: req.params.idCategory }, (err, doc) => {
-    if(doc)
-    Course.find({ category: doc.name }).lean()
-    .exec(function (error, docs) {
-      if (error) {
-        const response = Response.falseResponse(error);
-        return res.status(304).json(response);
-      }
-      else {
-        let teacherId = [];
-        for (let i = 0; i < docs.length; i++) {
-          teacherId.push(docs[i].idTeacher);
-        }
-        User.find({
-          '_id': {
-            $in: teacherId
+    if (doc)
+      Course.find({ category: doc.name }).lean()
+        .exec(function (error, docs) {
+          if (error) {
+            const response = Response.falseResponse(error);
+            return res.status(304).json(response);
           }
-        }).select('fullname').exec(function (err, teachersName) {
-          for (let i = 0; i < docs.length; i++) {
-            for (let j = 0; j < teachersName.length; j++) {
-              if (docs[i].idTeacher == teachersName[j]._id) {
-                docs[i].nameTeacher = teachersName[j].fullname;
-                break;
-              }
+          else {
+            let teacherId = [];
+            for (let i = 0; i < docs.length; i++) {
+              teacherId.push(docs[i].idTeacher);
             }
+            User.find({
+              '_id': {
+                $in: teacherId
+              }
+            }).select('fullname').exec(function (err, teachersName) {
+              for (let i = 0; i < docs.length; i++) {
+                for (let j = 0; j < teachersName.length; j++) {
+                  if (docs[i].idTeacher == teachersName[j]._id) {
+                    docs[i].nameTeacher = teachersName[j].fullname;
+                    break;
+                  }
+                }
+              }
+              const response = Response.successResponse(docs);
+              return res.status(200).json(response);
+            });
           }
-          const response = Response.successResponse(docs);
-          return res.status(200).json(response);
         });
-      }
-    });
-    else{
-      return res.json({ success: 'fail',error:'unknow error' })
+    else {
+      return res.json({ success: 'fail', error: 'unknow error' });
     }
-  })
-})
+  });
+});
 
-router.post('/addCourse', authMiddewares, (req,res)=>{
-   User.findOne({ _id: req.user.id }).lean()
+router.post('/addCourse', authMiddewares, (req, res) => {
+  User.findOne({ _id: req.user.id }).lean()
     .exec(function (error, doc) {
       if (error) {
         const response = Response.falseResponse(error);
@@ -493,23 +483,23 @@ router.post('/addCourse', authMiddewares, (req,res)=>{
       }
       else {
         if (doc) {
-            let newCourse=new Course({
-              name: req.body.name,
-              short_described: req.body.short_described,
-              full_described:req.body.full_described,
-              rating: 0,
-              image_link:req.body.image_link,
-              idTeacher: req.user.id,
-              isFinish: false,
-              view: 0,
-              price:parseInt(req.body.price),
-              category: req.body.category,
-              review: [],
-              feedBack: []
-            }).save((err,doc)=>{
-              if(err) return res.json({success:'fail',error:'k add duoc vao mongo'})
-              else return res.json({success:'true',course:doc})
-            })
+          let newCourse = new Course({
+            name: req.body.name,
+            short_described: req.body.short_described,
+            full_described: req.body.full_described,
+            rating: 0,
+            image_link: req.body.image_link,
+            idTeacher: req.user.id,
+            isFinish: false,
+            view: 0,
+            price: parseInt(req.body.price),
+            category: req.body.category,
+            review: [],
+            feedBack: []
+          }).save((err, doc) => {
+            if (err) return res.json({ success: 'fail', error: 'k add duoc vao mongo' });
+            else return res.json({ success: 'true', course: doc });
+          });
         }
         else {
           const response = Response.falseResponse('User not exists');
@@ -517,9 +507,9 @@ router.post('/addCourse', authMiddewares, (req,res)=>{
         }
       }
     });
-})
+});
 
-router.post('/addCategory', authMiddewares, valid(validCategorySchema), async (req,res)=>{
+router.post('/addCategory', authMiddewares, valid(validCategorySchema), async (req, res) => {
   if (req.user.type !== 3) {
     const response = Response.falseResponse('User has no permissions');
     return res.status(200).json(response);
@@ -535,17 +525,17 @@ router.post('/addCategory', authMiddewares, valid(validCategorySchema), async (r
   const user = await UserModel.findUserById(req.user.id);
 
   if (user) {
-      const category = await CategoryModel.addCategory(req.body);
-      const response = Response.successResponse(category);
-      return res.status(200).json(response);
+    const category = await CategoryModel.addCategory(req.body);
+    const response = Response.successResponse(category);
+    return res.status(200).json(response);
   }
   else {
     const response = Response.falseResponse('User not exists');
     return res.status(200).json(response);
   }
-})
+});
 
-router.delete('/categoryByName', authMiddewares, async (req,res)=>{
+router.delete('/categoryByName', authMiddewares, async (req, res) => {
   if (req.user.type !== 3) {
     const response = Response.falseResponse('User has no permissions');
     return res.status(200).json(response);
@@ -554,21 +544,21 @@ router.delete('/categoryByName', authMiddewares, async (req,res)=>{
   const user = await UserModel.findUserById(req.user.id);
 
   if (user) {
-      const del = await CategoryModel.deleteByName(req.body.name);
-      if (del) {
-        const response = Response.successResponse({ msg: "Delete success" });
-        return res.status(200).json(response);
-      }
-      const response = Response.falseResponse('Delete fail');
+    const del = await CategoryModel.deleteByName(req.body.name);
+    if (del) {
+      const response = Response.successResponse({ msg: "Delete success" });
       return res.status(200).json(response);
+    }
+    const response = Response.falseResponse('Delete fail');
+    return res.status(200).json(response);
   }
   else {
     const response = Response.falseResponse('User not exists');
     return res.status(200).json(response);
   }
-})
+});
 
-router.delete('/categoryById', authMiddewares, async (req,res)=>{
+router.delete('/categoryById', authMiddewares, async (req, res) => {
   if (req.user.type !== 3) {
     const response = Response.falseResponse('User has no permissions');
     return res.status(200).json(response);
@@ -589,14 +579,14 @@ router.delete('/categoryById', authMiddewares, async (req,res)=>{
     const response = Response.falseResponse('User not exists');
     return res.status(200).json(response);
   }
-})
+});
 
 router.put('/category', authMiddewares, async (req, res) => {
   if (req.user.type !== 3) {
     const response = Response.falseResponse('User has no permissions');
     return res.status(200).json(response);
   }
-  
+
   const checkCategory = await CategoryModel.findCategoryByName(req.body.name);
 
   if (checkCategory) {
@@ -607,7 +597,7 @@ router.put('/category', authMiddewares, async (req, res) => {
   const user = await UserModel.findUserById(req.user.id);
 
   if (user) {
-    const data = await CategoryModel.updateCategory(req.body)
+    const data = await CategoryModel.updateCategory(req.body);
     const response = Response.successResponse(data);
     return res.status(200).json(response);
   }
@@ -617,7 +607,7 @@ router.put('/category', authMiddewares, async (req, res) => {
   }
 });
 
-router.get('/search/:text', courseController.searchCourseEndPoint)
+router.get('/search/:text', courseController.searchCourseEndPoint);
 router.get('/getBestCourses', (req, res) => {
   Course.find({})
     .sort({ price: -1 })// sắp xếp giảm dần theo price
@@ -629,7 +619,7 @@ router.get('/getBestCourses', (req, res) => {
         return res.status(304).json(response);
       }
       else {
-        console.log(docs.length)
+        console.log(docs.length);
         let teacherId = [];
         for (let i = 0; i < docs.length; i++) {
           teacherId.push(docs[i].idTeacher);
@@ -652,5 +642,5 @@ router.get('/getBestCourses', (req, res) => {
         });
       }
     });
-})
+});
 module.exports = router;

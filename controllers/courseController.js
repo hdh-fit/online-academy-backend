@@ -1,7 +1,6 @@
 require("dotenv").config();
 const MONGODB_URL = process.env.MONGO_URL;
 const mongoose = require('mongoose');
-const { Category } = require("../models/category.model");
 const { Course } = require("../models/course_model");
 const { User } = require("../models/user.model");
 const Response = require('../jsonResponse/jsonResponse');
