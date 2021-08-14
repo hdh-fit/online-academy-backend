@@ -323,10 +323,13 @@ router.post('/review/:idCourse', authMiddewares, (req, res) => {
                 };
                 course.review.push(reviewObject);
                 course.save();
-                reviewObject.fullname = doc.fullname;
-                return res.status(200).json(reviewObject);
+                const data = course.review[course.review.length-1].toObject();
+                data.fullname = doc.fullname;
+                const response = Response.successResponse(data);
+                return res.status(200).json(response);
               } else {
-                return res.json({ success: 'fail', error: 'không tìm thấy course với id' });
+                const response = Response.falseResponse('không tìm thấy course với id');
+                return res.status(200).json(response);
               }
             });
           }
