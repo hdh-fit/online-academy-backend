@@ -322,6 +322,11 @@ router.post('/review/:idCourse', authMiddewares, (req, res) => {
                   id_user: req.user.id
                 };
                 course.review.push(reviewObject);
+                course.rating = 0;
+                for (let i = 0; i < course.review.length; i++) {
+                  course.rating += course.review[i].rate;
+                }
+                course.rating = course.rating / course.review.length;
                 course.save();
                 const data = course.review[course.review.length-1].toObject();
                 data.fullname = doc.fullname;
