@@ -313,7 +313,7 @@ router.post('/review/:idCourse', authMiddewares, (req, res) => {
       }
       else {
         if (doc) {
-          Course.findOne({ _id: req.params.idCourse }).lean().exec((err, course) => {
+          Course.findOne({ _id: req.params.idCourse }).exec((err, course) => {
             if (course) {
               let reviewObject = {
                 conmment: req.body.comment,
