@@ -306,7 +306,6 @@ router.get('/user/watchlist', authMiddewares, async (req, res) => {
 router.post('/review/:idCourse', authMiddewares, (req, res) => {
   const idCourse = req.params.idCourse;
   User.findOne({ _id: req.user.id })
-    .lean()
     .exec(function (error, doc) {
       if (error) {
         const response = Response.falseResponse(error);
