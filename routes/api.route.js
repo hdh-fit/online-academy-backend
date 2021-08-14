@@ -15,6 +15,7 @@ const CategoryModel = require('../models/category.model');
 const { Category } = require("../models/category.model");
 const { Course } = require("../models/course_model");
 let mongoose = require('mongoose');
+const courseController = require("../controllers/courseController");
 
 mongoose.connect(MONGODB_URL, { useNewUrlParser: true, useUnifiedTopology: true });
 const videoSchema = new mongoose.Schema({
@@ -615,5 +616,7 @@ router.put('/category', authMiddewares, async (req, res) => {
     return res.status(200).json(response);
   }
 });
+
+router.get('/search/:text', courseController.searchCourseEndPoint)
 
 module.exports = router;
