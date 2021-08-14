@@ -618,5 +618,39 @@ router.put('/category', authMiddewares, async (req, res) => {
 });
 
 router.get('/search/:text', courseController.searchCourseEndPoint)
-
+router.get('/getBestCourses', (req, res) => {
+  Course.find({})
+    .sort({ price: -1 })// sắp xếp giảm dần theo price
+    .limit(5)// lấy nhiều nhất 5 item
+    .lean()
+    .exec(function (error, docs) {
+      if (error) {
+        const response = Response.falseResponse(error);
+        return res.status(304).json(response);
+      }
+      else {
+        console.log(docs.length)
+        let teacherId = [];
+        for (let i = 0; i < docs.length; i++) {
+          teacherId.push(docs[i].idTeacher);
+        }
+        User.find({
+          '_id': {
+            $in: teacherId
+          }
+        }).select('fullname').exec(function (err, teachersName) {
+          for (let i = 0; i < docs.length; i++) {
+            for (let j = 0; j < teachersName.length; j++) {
+              if (docs[i].idTeacher == teachersName[j]._id) {
+                docs[i].nameTeacher = teachersName[j].fullname;
+                break;
+              }
+            }
+          }
+          const response = Response.successResponse(docs);
+          return res.status(200).json(response);
+        });
+      }
+    });
+})
 module.exports = router;
