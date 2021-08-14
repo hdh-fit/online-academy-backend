@@ -149,5 +149,36 @@ module.exports = {
         else {
             return false;
         }
-    }
+    },
+
+    async getCourselist(id) {
+        const user = await User.findOne({ _id: id })
+        if (user) {
+            const listCourse = await Course.find({
+                '_id': {$in: user.listCourse}},
+                '_id name rating image_link dateCourse isFinish view price category idTeacher')
+                .lean()
+                .exec();
+
+            let teacherId = [];
+            for (let i = 0; i < listCourse.length; i++) {
+                teacherId.push(listCourse[i].idTeacher);
+            }
+            
+            const teachersName = await User.find({'_id': {$in: teacherId}}).select('fullname').exec();
+            for (let i = 0; i < listCourse.length; i++) {
+                for (let j = 0; j < teachersName.length; j++) {
+                    if (listCourse[i].idTeacher == teachersName[j]._id) {
+                        listCourse[i].nameTeacher = teachersName[j].fullname;
+                        break;
+                    }
+                }
+            }
+            return listCourse;
+        }
+        else {
+            return false;
+        }
+    },
+
 };

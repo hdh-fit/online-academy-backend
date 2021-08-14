@@ -670,4 +670,16 @@ router.get('/getBestCourses', (req, res) => {
     });
 });
 
+router.get('/user/listCourse', authMiddewares, async (req, res) => {
+  const Courselist = await UserModel.getCourselist(req.user.id);
+  if (Courselist) {
+    const response = Response.successResponse(Courselist);
+    return res.status(200).json(response);
+  }
+  else {
+    const response = Response.falseResponse('Get Courselist false');
+    return res.status(200).json(response);
+  }
+});
+
 module.exports = router;
