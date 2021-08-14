@@ -304,6 +304,7 @@ router.get('/user/watchlist', authMiddewares, async (req, res) => {
 });
 
 router.post('/review/:idCourse', authMiddewares, (req, res) => {
+  const idCourse = req.params.idCourse;
   User.findOne({ _id: req.user.id })
     .lean()
     .exec(function (error, doc) {
@@ -313,21 +314,28 @@ router.post('/review/:idCourse', authMiddewares, (req, res) => {
       }
       else {
         if (doc) {
-          Course.findOne({ _id: req.params.idCourse }).exec((err, course) => {
-            if (course) {
-              let reviewObject = {
-                comment: req.body.comment,
-                rate: parseInt(req.body.rate),
-                id_user: req.user.id
-              };
-              course.review.push(reviewObject);
-              course.save();
-              reviewObject.fullname = doc.fullname;
-              return res.status(200).json(reviewObject);
-            } else {
-              return res.json({ success: 'fail', error: 'không tìm thấy course với id' });
-            }
-          });
+          if (doc.listCourse.indexOf(idCourse) > -1) {
+            Course.findOne({ _id: idCourse }).exec((err, course) => {
+              if (course) {
+                let reviewObject = {
+                  comment: req.body.comment,
+                  rate: parseInt(req.body.rate),
+                  id_user: req.user.id
+                };
+                course.review.push(reviewObject);
+                course.save();
+                reviewObject.fullname = doc.fullname;
+                return res.status(200).json(reviewObject);
+              } else {
+                return res.json({ success: 'fail', error: 'không tìm thấy course với id' });
+              }
+            });
+          }
+          else {
+
+            const response = Response.falseResponse('User not join this course');
+            return res.status(200).json(response);
+          }
         }
         else {
 
