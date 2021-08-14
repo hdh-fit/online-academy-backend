@@ -7,7 +7,7 @@ const request = require('request');
 const mongoose = require('mongoose');
 const { Course } = require("../models/course_model");
 const { Category } = require("../models/category.model");
-const { getCourseByCategoryName } = require("./courseController");
+const { getCourseByCategoryName, searchCourse } = require("./courseController");
 mongoose.connect(MONGODB_URL, { useNewUrlParser: true, useUnifiedTopology: true });
 
 const optionsResponse = {
@@ -326,24 +326,18 @@ const callSendAPI = (sender_psid, response) => {
 };
 
 const testEndpoint = (req, res) => {
-	getCategories()
+	const keyword = req.params.text;
+
+	searchCourse(keyword)
 		.then(categories => {
-			const quick_replies = categories.map(category => (
-				{
-					"content_type": "text",
-					"title": category.label,
-					"payload": category.name,
-				}
-			));
-
-			const response = {
-				text: "Xin chọn danh mục:",
-				quick_replies
-			};
-
+			const response = Response.successResponse(categories);
 			res.status(200).json(response);
 		})
-		.catch();
+		.catch((err) => {
+			console.log(err);
+			const response = Response.falseResponse('Some thing wrong');
+			res.status(304).json(response);
+		});
 };
 
 module.exports = {
