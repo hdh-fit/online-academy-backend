@@ -2,7 +2,8 @@
     "type": "object",
     "required": [
       "name",
-      "label"
+      "label",
+      "category"
     ],
     "additionalProperties": false,
     "properties": {
@@ -10,6 +11,9 @@
         "type": "string"
       },
       "label": {
+        "type": "string"
+      },
+      "category": {
         "type": "string"
       }
     }

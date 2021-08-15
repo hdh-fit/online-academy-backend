@@ -2,7 +2,8 @@ const mongoose = require('mongoose');
 const { Course } = require("./course_model");
 const categorySchema = new mongoose.Schema({
     name:String,
-    label:String
+    label:String,
+    category:String
 });
 const Category = mongoose.model('Category', categorySchema);
 
@@ -17,6 +18,10 @@ module.exports = {
 
     findCategoryByName(name) {
         return Category.findOne({ name: name }).lean().exec();
+    },
+
+    findCategoryByCategory(category) {
+        return Category.findOne({ category: category }).lean().exec();
     },
 
     async deleteByName(name) {
