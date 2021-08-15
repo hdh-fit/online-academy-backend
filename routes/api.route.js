@@ -748,5 +748,37 @@ router.get('/getBestCourses', (req, res) => {
       }
     });
 });
-
+router.get('/teacherCourse/:idTeacher',(req,res)=>{
+  Course.find({idTeacher:req.params.idTeacher})
+    .lean()
+    .exec(function (error, docs) {
+      if (error) {
+        const response = Response.falseResponse(error);
+        return res.status(304).json(response);
+      }
+      else {
+        console.log(docs.length)
+        let teacherId = [];
+        for (let i = 0; i < docs.length; i++) {
+          teacherId.push(docs[i].idTeacher);
+        }
+        User.find({
+          '_id': {
+            $in: teacherId
+          }
+        }).select('fullname').exec(function (err, teachersName) {
+          for (let i = 0; i < docs.length; i++) {
+            for (let j = 0; j < teachersName.length; j++) {
+              if (docs[i].idTeacher == teachersName[j]._id) {
+                docs[i].nameTeacher = teachersName[j].fullname;
+                break;
+              }
+            }
+          }
+          const response = Response.successResponse(docs);
+          return res.status(200).json(response);
+        });
+      }
+    });
+})
 module.exports = router;
