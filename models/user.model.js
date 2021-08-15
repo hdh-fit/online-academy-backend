@@ -31,6 +31,10 @@ module.exports = {
         return User.findOne({ username: username }).lean().exec();
     },
 
+    findUserByEmail(email) {
+        return User.findOne({ email: email }).lean().exec();
+    },
+
     async addNewUser(user) {
         const newuser = new User(user);
         newuser.password = bcrypt.hashSync(newuser.password, 10);
@@ -46,7 +50,6 @@ module.exports = {
             dob: user.dob,
             describe: user.describe,
             level: user.level,
-            email: user.email,
         }
 
         const data = await User.findOneAndUpdate(
@@ -114,6 +117,13 @@ module.exports = {
 
     getAllUser() {
         return User.find({},
+            '_id fullname username phone type gender dob email')
+            .lean()
+            .exec();
+    },
+
+    getUserByType(type) {
+        return User.find({type: type},
             '_id fullname username phone type gender dob email')
             .lean()
             .exec();

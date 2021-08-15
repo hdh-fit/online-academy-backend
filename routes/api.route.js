@@ -175,6 +175,13 @@ router.post('/user/register', valid(validUserSchema), async (req, res) => {
     return res.status(200).json(response);
   }
 
+  const checkEmail = await UserModel.findUserByEmail(newuser.email);
+
+  if (checkEmail) {
+    const response = Response.falseResponse('Email already exists');
+    return res.status(200).json(response);
+  }
+
   const user = await UserModel.addNewUser(newuser);
 
   if (user) {
@@ -361,6 +368,24 @@ router.get('/user/all', authMiddewares, async (req, res) => {
   const user = await UserModel.findUserById(req.user.id);
   if (user) {
     const all = await UserModel.getAllUser();
+    const response = Response.successResponse(all);
+    return res.status(200).json(response);
+  }
+  else {
+    const response = Response.falseResponse('User not exists');
+    return res.status(200).json(response);
+  }
+});
+
+router.get('/user/all/:type', authMiddewares, async (req, res) => {
+  const type = req.params.type;
+  if (req.user.type !== 3) {
+    const response = Response.falseResponse('User has no permissions');
+    return res.status(200).json(response);
+  }
+  const user = await UserModel.findUserById(req.user.id);
+  if (user) {
+    const all = await UserModel.getUserByType(type);
     const response = Response.successResponse(all);
     return res.status(200).json(response);
   }
