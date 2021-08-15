@@ -204,6 +204,12 @@ router.post('/user/login', async (req, res) => {
     return res.status(200).json(response);
   }
 
+  if (checkUsername.disable) {
+    const response = Response.falseResponse('User have been block');
+    return res.status(200).json(response);
+  }
+
+
   if (!bcrypt.compareSync(user.password, checkUsername.password)) {
     return res.json({
       authenticated: false
@@ -418,6 +424,34 @@ router.get('/user/:id', authMiddewares, async (req, res) => {
     const data = await UserModel.findUserById(req.params.id);
     delete data.password;
     const response = Response.successResponse(data);
+    return res.status(200).json(response);
+  }
+  else {
+    const response = Response.falseResponse('User not exists');
+    return res.status(200).json(response);
+  }
+});
+
+router.post('/disableuser', authMiddewares, async (req, res) => {
+  if (req.user.type !== 3) {
+    const response = Response.falseResponse('User has no permissions');
+    return res.status(200).json(response);
+  }
+
+  const user = await UserModel.findUserById(req.user.id);
+
+  if (req.user.id === req.body.id) {
+    const response = Response.falseResponse('Can not delete this user');
+    return res.status(200).json(response);
+  }
+
+  if (user) {
+    const disableUser = await UserModel.disableUser(req.body.id); 
+    if (disableUser) {
+      const response = Response.successResponse({ msg: "Disable success" });
+      return res.status(200).json(response);
+    }
+    const response = Response.falseResponse('Disable fail');
     return res.status(200).json(response);
   }
   else {

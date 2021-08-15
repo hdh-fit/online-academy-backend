@@ -16,7 +16,8 @@ const userSchema = new mongoose.Schema({
     level: String,
     email: String,
     watchlist: [String],
-    listCourse: [String]
+    listCourse: [String],
+    disable: { type: Boolean, default: false }
 });
 const User = mongoose.model('User', userSchema);
 
@@ -130,14 +131,17 @@ module.exports = {
     },
 
     async deleteById(id) {
-        const course = await Course.find({ listStudent: id });
-        console.log(course);
-        for (let i = 0; i < course.length; i++) {
-            course[i].listStudent.pull(id);
-            await course[i].save();
+        const user = await User.findOne({_id: id});
+        if(user && user.type !== 3) {
+            const course = await Course.find({ listStudent: id });
+            for (let i = 0; i < course.length; i++) {
+                course[i].listStudent.pull(id);
+                await course[i].save();
+            }
+            
+            return User.deleteOne({ _id: id }).exec();
         }
-        
-        return User.deleteOne({ _id: id }).exec();
+        return false;
     },
 
     async joinCourse(id, idCourse) {
@@ -191,4 +195,13 @@ module.exports = {
         }
     },
 
+    async disableUser(id) {
+        const user = await User.findOne({_id: id});
+        if(user && user.type !== 3) {
+            user.disable = true;
+            await user.save();
+            return true;
+        }
+        else return false;
+    },
 };
