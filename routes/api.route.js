@@ -783,10 +783,10 @@ router.get('/teacherCourse/:idTeacher',(req,res)=>{
 })
 router.get('/getCourseByCategoryName/:name/:pageNumber/:limitPerPage', (req, res) => {
   let perPage = parseInt(req.params.limitPerPage)
-  let page = Math.max(0, req.params.pageNumber)
+  let page = Math.max(1, req.params.pageNumber)
 
   Course.find({ category: req.params.name }).limit(perPage)
-    .skip(perPage * page).lean()
+    .skip(perPage * (page-1)).lean()
     .exec(function (error, docs) {
       if (error) {
         const response = Response.falseResponse(error);
