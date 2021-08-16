@@ -29,7 +29,7 @@ app.use(function (err, req, res, next) {
   });
 });
 
-const PORT = process.env.PORT || 3030;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, function () {
   setInterval(()=>{
     process.exit(0)
@@ -44,7 +44,7 @@ const minutes = date.getMinutes();
 console.log(day);
 console.log(hours);
 console.log(minutes);
-if (day === 1 && hours === 3 && minutes > 35) {
+if (day === 1 && hours === 9 && minutes > 35) {
   resetWeekly();
 }
 
