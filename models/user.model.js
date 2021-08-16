@@ -155,6 +155,7 @@ module.exports = {
             else {
                 user.listCourse.push(idCourse);
                 course.listStudent.push(id);
+                course.joinWeek += 1;
             }
             await user.save();
             await course.save();
@@ -199,6 +200,16 @@ module.exports = {
         const user = await User.findOne({_id: id});
         if(user && user.type !== 3) {
             user.disable = true;
+            await user.save();
+            return true;
+        }
+        else return false;
+    },
+
+    async enableUser(id) {
+        const user = await User.findOne({_id: id});
+        if(user && user.type !== 3) {
+            user.disable = false;
             await user.save();
             return true;
         }

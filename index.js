@@ -35,3 +35,25 @@ app.listen(PORT, function () {
     process.exit(0)
   },25*60*1000)
 });
+
+const { Course } = require("./models/course_model");
+const date = new Date();
+const day = date.getDay();
+const hours = date.getHours();
+const minutes = date.getMinutes();
+console.log(day);
+console.log(hours);
+console.log(minutes);
+if (day === 1 && hours === 3 && minutes > 35) {
+  resetWeekly();
+}
+
+async function resetWeekly() {
+  const course = await Course.find({}).exec();
+  if (course){
+    for (let i = 0; i < course.length; i++) {
+      course[i].joinWeek = 0;
+      await course[i].save();
+    }
+  }
+}

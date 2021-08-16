@@ -440,11 +440,6 @@ router.post('/disableuser', authMiddewares, async (req, res) => {
 
   const user = await UserModel.findUserById(req.user.id);
 
-  if (req.user.id === req.body.id) {
-    const response = Response.falseResponse('Can not delete this user');
-    return res.status(200).json(response);
-  }
-
   if (user) {
     const disableUser = await UserModel.disableUser(req.body.id); 
     if (disableUser) {
@@ -452,6 +447,29 @@ router.post('/disableuser', authMiddewares, async (req, res) => {
       return res.status(200).json(response);
     }
     const response = Response.falseResponse('Disable fail');
+    return res.status(200).json(response);
+  }
+  else {
+    const response = Response.falseResponse('User not exists');
+    return res.status(200).json(response);
+  }
+});
+
+router.post('/enableuser', authMiddewares, async (req, res) => {
+  if (req.user.type !== 3) {
+    const response = Response.falseResponse('User has no permissions');
+    return res.status(200).json(response);
+  }
+
+  const user = await UserModel.findUserById(req.user.id);
+
+  if (user) {
+    const enableUser = await UserModel.enableUser(req.body.id); 
+    if (enableUser) {
+      const response = Response.successResponse({ msg: "Enable success" });
+      return res.status(200).json(response);
+    }
+    const response = Response.falseResponse('Enable fail');
     return res.status(200).json(response);
   }
   else {
@@ -713,6 +731,7 @@ router.post('/user/joinCourse', authMiddewares, async (req, res) => {
 });
 
 router.get('/search/:text', courseController.searchCourseEndPoint);
+
 router.get('/getBestCourses', (req, res) => {
   Course.find({})
     .sort({ price: -1 })// sắp xếp giảm dần theo price
@@ -748,6 +767,7 @@ router.get('/getBestCourses', (req, res) => {
       }
     });
 });
+
 router.get('/teacherCourse/:idTeacher',(req,res)=>{
   Course.find({idTeacher:req.params.idTeacher})
     .lean()
@@ -781,6 +801,7 @@ router.get('/teacherCourse/:idTeacher',(req,res)=>{
       }
     });
 })
+
 router.get('/getCourseByCategoryName/:name/:pageNumber/:limitPerPage', (req, res) => {
   let perPage = parseInt(req.params.limitPerPage)
   let page = Math.max(1, req.params.pageNumber)
@@ -816,6 +837,7 @@ router.get('/getCourseByCategoryName/:name/:pageNumber/:limitPerPage', (req, res
       }
     });
 })
+
 router.get('/myUpLoadCourse', authMiddewares,(req,res)=>{
   Course.find({idTeacher:req.req.user.id})
     .lean()
@@ -849,4 +871,5 @@ router.get('/myUpLoadCourse', authMiddewares,(req,res)=>{
       }
     });
 })
+
 module.exports = router;
