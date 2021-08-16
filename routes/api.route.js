@@ -12,7 +12,7 @@ const UserModel = require("../models/user.model");
 const User = UserModel.User;
 const CategoryModel = require('../models/category.model');
 const { Category } = require("../models/category.model");
-const { Course, Video } = require("../models/course_model");
+const { Course, Video, BlackCourse } = require("../models/course_model");
 const courseController = require("../controllers/courseController");
 
 //lấy tất cả danh sách khóa học
@@ -871,24 +871,6 @@ router.get('/myUpLoadCourse', authMiddewares,(req,res)=>{
       }
     });
 })
-const blackCourseSchema = new mongoose.Schema({
-  stt: String,
-  name: String,
-  short_described: String,
-  full_described: String,
-  rating: Number,
-  image_link: String,
-  idTeacher: String,
-  dateCourse: Date,
-  isFinish: Boolean,
-  view: Number,
-  price: Number,
-  category: String,
-  review: [{ comment: String, id_user: mongoose.ObjectId, rate: Number, date: { type: Date, default: Date.now } }],
-  feedBack: [{ type: String }]
-});
-const BlackCourse = mongoose.model('BlackCourse', blackCourseSchema);
-
 
 
 router.get('/banCourse/:idCourse',(req,res)=>{
