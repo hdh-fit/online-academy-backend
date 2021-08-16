@@ -26,5 +26,22 @@ const videoSchema = new mongoose.Schema({
 });
 const Video = mongoose.model('Video', videoSchema);
 
-module.exports = { Course, Video };
+const blackCourseSchema = new mongoose.Schema({
+  stt: String,
+  name: String,
+  short_described: String,
+  full_described: String,
+  rating: Number,
+  image_link: String,
+  idTeacher: String,
+  dateCourse: Date,
+  isFinish: Boolean,
+  view: Number,
+  price: Number,
+  category: String,
+  review: [{ comment: String, id_user: mongoose.ObjectId, rate: Number, date: { type: Date, default: Date.now } }],
+  feedBack: [{ type: String }]
+});
+const BlackCourse = mongoose.model('BlackCourse', blackCourseSchema);
+module.exports = { Course, Video, BlackCourse };
 
