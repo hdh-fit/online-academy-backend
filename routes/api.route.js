@@ -871,5 +871,36 @@ router.get('/myUpLoadCourse', authMiddewares,(req,res)=>{
       }
     });
 })
+const blackCourseSchema = new mongoose.Schema({
+  stt: String,
+  name: String,
+  short_described: String,
+  full_described: String,
+  rating: Number,
+  image_link: String,
+  idTeacher: String,
+  dateCourse: Date,
+  isFinish: Boolean,
+  view: Number,
+  price: Number,
+  category: String,
+  review: [{ comment: String, id_user: mongoose.ObjectId, rate: Number, date: { type: Date, default: Date.now } }],
+  feedBack: [{ type: String }]
+});
+const BlackCourse = mongoose.model('BlackCourse', blackCourseSchema);
 
+
+
+router.get('/banCourse/:idCourse',(req,res)=>{
+   Course.findOneAndDelete({_id:req.params.idCourse})
+    .lean()
+    .exec(function (error, doc) {
+      if(doc){
+      let blackCourseSchema=new BlackCourse(doc).save();
+      return res.json(doc)
+      }else{
+         res.json({err:'not found document'})
+      }
+    });
+})
 module.exports = router;
