@@ -839,7 +839,7 @@ router.get('/getCourseByCategoryName/:name/:pageNumber/:limitPerPage', (req, res
 })
 
 router.get('/myUpLoadCourse', authMiddewares,(req,res)=>{
-  Course.find({idTeacher:req.req.user.id})
+  Course.find({idTeacher:req.user.id})
     .lean()
     .exec(function (error, docs) {
       if (error) {
