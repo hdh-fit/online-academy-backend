@@ -731,6 +731,7 @@ router.post('/user/joinCourse', authMiddewares, async (req, res) => {
 });
 
 router.get('/search/:text', courseController.searchCourseEndPoint);
+router.get('/search/:text/:pageNumber/:limitPerPage', courseController.searchCourseEndPoint);
 
 router.get('/getBestCourses', (req, res) => {
   Course.find({})

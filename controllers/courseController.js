@@ -78,6 +78,8 @@ const getCourseByCategoryName = (categoryName) => {
 
 const searchCourseEndPoint = async (req, res) => {
 	const keyword = req.params.text;
+	const perPage = parseInt(req.params.limitPerPage)
+	const page = Math.max(1, req.params.pageNumber)
 	const course = await Course.aggregate([
 		{
 		  '$search': {
@@ -103,14 +105,14 @@ const searchCourseEndPoint = async (req, res) => {
 			'score' : {'$meta' : 'searchScore'}
 			}
 		}
-	  ]);
+	  ]).skip(perPage * (page-1)).limit(perPage);
 	if (course) {
 		let teacherId = [];
     	for (let i = 0; i < course.length; i++) {
             teacherId.push(course[i].idTeacher);
         }
         const teachersName = await User.find({'_id': {$in: teacherId}}).select('fullname').exec();
-		console.log(teachersName);	
+	
         for (let i = 0; i < course.length; i++) {
             for (let j = 0; j < teachersName.length; j++) {
                 if (course[i].idTeacher == teachersName[j]._id) {
