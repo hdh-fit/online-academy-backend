@@ -83,6 +83,35 @@ router.get('/course/top-10-view', (req, res) => {
     });
 });
 
+router.get('/course/top-5-join', async (req,res)=>{
+  const course = await Course.find({},
+    '_id name rating image_link dateCourse isFinish view price category idTeacher joinWeek')
+    .sort({ joinWeek: -1 }).limit(5).lean().exec();
+
+  if (course) {
+		let teacherId = [];
+    	for (let i = 0; i < course.length; i++) {
+            teacherId.push(course[i].idTeacher);
+        }
+        const teachersName = await User.find({'_id': {$in: teacherId}}).select('fullname').exec();
+	
+        for (let i = 0; i < course.length; i++) {
+            for (let j = 0; j < teachersName.length; j++) {
+                if (course[i].idTeacher == teachersName[j]._id) {
+                    course[i].nameTeacher = teachersName[j].fullname;
+                    break;
+                }
+            }
+        }
+		const response = Response.successResponse(course);
+		res.status(200).json(response);
+	} 
+	else {
+		const response = Response.falseResponse('Some thing wrong');
+    return res.status(304).json(response);
+	}
+})
+
 router.get('/course/top-10-date-create', (req, res) => {
   Course.find({})
     .sort({ dateCourse: -1 })// sắp xếp giảm dần theo thời gian
@@ -730,7 +759,6 @@ router.post('/user/joinCourse', authMiddewares, async (req, res) => {
   }
 });
 
-router.get('/search/:text', courseController.searchCourseEndPoint);
 router.get('/search/:text/:pageNumber/:limitPerPage', courseController.searchCourseEndPoint);
 
 router.get('/getBestCourses', (req, res) => {
@@ -886,4 +914,5 @@ router.get('/banCourse/:idCourse',(req,res)=>{
       }
     });
 })
+
 module.exports = router;

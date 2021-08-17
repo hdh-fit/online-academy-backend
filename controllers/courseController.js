@@ -105,23 +105,30 @@ const searchCourseEndPoint = async (req, res) => {
 			'score' : {'$meta' : 'searchScore'}
 			}
 		}
-	  ]).skip(perPage * (page-1)).limit(perPage);
+	  ]);
 	if (course) {
+		let pageMax = Math.floor(course.length / perPage);
+		if (course.length / perPage != pageMax) pageMax +=1;
+		const data = [];
+		for (let i = 0; i < perPage && i + perPage * (page-1) < course.length; i++) {
+            data[i] = course[i + perPage * (page	-1)];
+        }
+		
 		let teacherId = [];
-    	for (let i = 0; i < course.length; i++) {
-            teacherId.push(course[i].idTeacher);
+    	for (let i = 0; i < data.length; i++) {
+            teacherId.push(data[i].idTeacher);
         }
         const teachersName = await User.find({'_id': {$in: teacherId}}).select('fullname').exec();
 	
-        for (let i = 0; i < course.length; i++) {
+        for (let i = 0; i < data.length; i++) {
             for (let j = 0; j < teachersName.length; j++) {
-                if (course[i].idTeacher == teachersName[j]._id) {
-                    course[i].nameTeacher = teachersName[j].fullname;
+                if (data[i].idTeacher == teachersName[j]._id) {
+                    data[i].nameTeacher = teachersName[j].fullname;
                     break;
                 }
             }
         }
-		const response = Response.successResponse(course);
+		const response = Response.successResponse({course: data, pageMax: pageMax});
 		res.status(200).json(response);
 	} 
 	else {
