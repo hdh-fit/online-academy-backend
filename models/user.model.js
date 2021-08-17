@@ -118,14 +118,14 @@ module.exports = {
 
     getAllUser() {
         return User.find({},
-            '_id fullname username phone type gender dob email')
+            '_id fullname username phone type gender dob email disable')
             .lean()
             .exec();
     },
 
     getUserByType(type) {
         return User.find({type: type},
-            '_id fullname username phone type gender dob email')
+            '_id fullname username phone type gender dob email disable')
             .lean()
             .exec();
     },
