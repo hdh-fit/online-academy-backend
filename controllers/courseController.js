@@ -76,19 +76,57 @@ const getCourseByCategoryName = (categoryName) => {
 	});
 };
 
-const searchCourseEndPoint = (req, res) => {
+const searchCourseEndPoint = async (req, res) => {
 	const keyword = req.params.text;
+	const course = await Course.aggregate([
+		{
+		  '$search': {
+			'index': 'default',
+			'text': {
+			  'query': keyword,
+			  'path': [ 'name', 'category' ]
 
-	searchCourse(keyword)
-		.then(categories => {
-			const response = Response.successResponse(categories);
-			res.status(200).json(response);
-		})
-		.catch((err) => {
-			console.log(err);
-			const response = Response.falseResponse('Some thing wrong');
-			res.status(304).json(response);
-		});
+			}
+		  }
+		},
+		{ '$project': {
+			'_id': 1,
+			'name':1,
+			'rating':1,
+			'image_link':1,
+			'dateCourse':1,
+			'isFinish':1,
+			'view':1,
+			'price':1,
+			'category':1,
+			'idTeacher':1,
+			'score' : {'$meta' : 'searchScore'}
+			}
+		}
+	  ]);
+	if (course) {
+		let teacherId = [];
+    	for (let i = 0; i < course.length; i++) {
+            teacherId.push(course[i].idTeacher);
+        }
+        const teachersName = await User.find({'_id': {$in: teacherId}}).select('fullname').exec();
+		console.log(teachersName);	
+        for (let i = 0; i < course.length; i++) {
+            for (let j = 0; j < teachersName.length; j++) {
+                if (course[i].idTeacher == teachersName[j]._id) {
+                    course[i].nameTeacher = teachersName[j].fullname;
+                    break;
+                }
+            }
+        }
+		const response = Response.successResponse(course);
+		res.status(200).json(response);
+	} 
+	else {
+		const response = Response.falseResponse('Some thing wrong');
+        return res.status(304).json(response);
+	}
+
 };
 
 module.exports = {
