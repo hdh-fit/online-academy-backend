@@ -12,7 +12,7 @@ const UserModel = require("../models/user.model");
 const User = UserModel.User;
 const CategoryModel = require('../models/category.model');
 const { Category } = require("../models/category.model");
-const { Course, Video } = require("../models/course_model");
+const { Course, Video, BlackCourse } = require("../models/course_model");
 const courseController = require("../controllers/courseController");
 
 //lấy tất cả danh sách khóa học
@@ -839,7 +839,7 @@ router.get('/getCourseByCategoryName/:name/:pageNumber/:limitPerPage', (req, res
 })
 
 router.get('/myUpLoadCourse', authMiddewares,(req,res)=>{
-  Course.find({idTeacher:req.req.user.id})
+  Course.find({idTeacher:req.user.id})
     .lean()
     .exec(function (error, docs) {
       if (error) {
@@ -872,4 +872,17 @@ router.get('/myUpLoadCourse', authMiddewares,(req,res)=>{
     });
 })
 
+
+router.get('/banCourse/:idCourse',(req,res)=>{
+   Course.findOneAndDelete({_id:req.params.idCourse})
+    .lean()
+    .exec(function (error, doc) {
+      if(doc){
+      let blackCourseSchema=new BlackCourse(doc).save();
+      return res.json(doc)
+      }else{
+         res.json({err:'not found document'})
+      }
+    });
+})
 module.exports = router;
