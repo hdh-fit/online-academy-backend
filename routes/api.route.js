@@ -921,5 +921,19 @@ router.get('/banCourse/:idCourse',(req,res)=>{
       }
     });
 })
-
+route.post('/updateCourse/:idCourse',(req,res)=>{
+  Course.findOne({_id:req.params.idCourse})
+    .lean()
+    .exec(function (error, doc) {
+      if(doc){
+      for(const p in req.body){
+        doc[p]=req.body[p];
+      }
+      doc.save();
+      return res.json(doc)
+      }else{
+         res.json({err:'not found document'})
+      }
+    });
+})
 module.exports = router;
