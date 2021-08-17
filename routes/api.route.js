@@ -835,32 +835,39 @@ router.get('/getCourseByCategoryName/:name/:pageNumber/:limitPerPage', (req, res
   let perPage = parseInt(req.params.limitPerPage)
   let page = Math.max(1, req.params.pageNumber)
 
-  Course.find({ category: req.params.name }).limit(perPage)
-    .skip(perPage * (page-1)).lean()
+  Course.find({ category: req.params.name }, 
+    '_id name rating image_link dateCourse isFinish view price category idTeacher review')
+    .lean()
     .exec(function (error, docs) {
       if (error) {
         const response = Response.falseResponse(error);
         return res.status(304).json(response);
       }
       else {
+        let pageMax = Math.floor(docs.length / perPage);
+		    if (docs.length / perPage != pageMax) pageMax +=1;
+        const data = [];
+		    for (let i = 0; i < perPage && i + perPage * (page-1) < docs.length; i++) {
+          data[i] = docs[i + perPage * (page	-1)];
+        }
         let teacherId = [];
-        for (let i = 0; i < docs.length; i++) {
-          teacherId.push(docs[i].idTeacher);
+        for (let i = 0; i < data.length; i++) {
+          teacherId.push(data[i].idTeacher);
         }
         User.find({
           '_id': {
             $in: teacherId
           }
         }).select('fullname').exec(function (err, teachersName) {
-          for (let i = 0; i < docs.length; i++) {
+          for (let i = 0; i < data.length; i++) {
             for (let j = 0; j < teachersName.length; j++) {
-              if (docs[i].idTeacher == teachersName[j]._id) {
-                docs[i].nameTeacher = teachersName[j].fullname;
+              if (data[i].idTeacher == teachersName[j]._id) {
+                data[i].nameTeacher = teachersName[j].fullname;
                 break;
               }
             }
           }
-          const response = Response.successResponse(docs);
+          const response = Response.successResponse({course: data, pageMax: pageMax});
           return res.status(200).json(response);
         });
       }

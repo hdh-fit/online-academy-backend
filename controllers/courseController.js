@@ -102,6 +102,7 @@ const searchCourseEndPoint = async (req, res) => {
 			'price':1,
 			'category':1,
 			'idTeacher':1,
+			'review': 1,
 			'score' : {'$meta' : 'searchScore'}
 			}
 		}
