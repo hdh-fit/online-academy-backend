@@ -25,24 +25,24 @@ module.exports = {
     },
 
     async deleteByName(name) {
-        const course = await Course.find({'category': name}).lean().exec();
-        if (course.lenght === 0) {
+        const course = await Course.find({'category': name}).exec();
+        if (course.length !== 0) {
             return false;
         }
         return Category.deleteOne({ name: name }).exec();
     },
 
     async deleteById(id) {
-        const course = await Course.find({_id: id}).lean().exec();
-        if (course.lenght === 0) {
+        const cate = await Course.find({_id: id}).lean().exec();
+        const course = await Course.find({'category': cate.name}).lean().exec();
+        if (course.lenght !== 0) {
             return false;
         }
-        return Category.deleteOne({ _id: id }).exec();
+        return Category.deleteOne({ 'category': cate.name }).exec();
     },
 
     async updateCategory(category) {
         const updates = {
-            name: category.name,
             label: category.label,
         }
 

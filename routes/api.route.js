@@ -720,13 +720,6 @@ router.put('/category', authMiddewares, async (req, res) => {
     return res.status(200).json(response);
   }
 
-  const checkCategory = await CategoryModel.findCategoryByName(req.body.name);
-
-  if (checkCategory) {
-    const response = Response.falseResponse('Category already exists');
-    return res.status(200).json(response);
-  }
-
   const user = await UserModel.findUserById(req.user.id);
 
   if (user) {
