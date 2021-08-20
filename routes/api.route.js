@@ -180,8 +180,14 @@ router.get('/course/detail/:id', (req, res) => {
                   }
                 }
               }
-              const response = Response.successResponse(doc);
-              return res.status(200).json(response);
+              User.find({
+                '_id': doc.idTeacher
+              }).lean().exec(function (err, teacher) {
+                doc.teacher = teacher;
+                const response = Response.successResponse(doc);
+                return res.status(200).json(response);
+              });
+              
             });
           });
         }
