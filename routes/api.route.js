@@ -159,6 +159,7 @@ router.get('/course/detail/:id', (req, res) => {
       }
       else {
         if (doc) {
+	  doc.view++; doc.save()
           //tim video voi course do
           Video.find({ id_course: doc._id }, (err, videos) => {
             doc.video = videos;
