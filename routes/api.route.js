@@ -151,7 +151,6 @@ router.get('/course/top-10-date-create', (req, res) => {
 
 router.get('/course/detail/:id', (req, res) => {
   Course.findOne({ _id: req.params.id })
-    .lean()
     .exec(function (error, doc) {
       if (error) {
         const response = Response.falseResponse(error);
@@ -159,6 +158,9 @@ router.get('/course/detail/:id', (req, res) => {
       }
       else {
         if (doc) {
+          doc.view++;
+          doc.save();
+          doc = doc.toObject();
           //tim video voi course do
           Video.find({ id_course: doc._id }, (err, videos) => {
             doc.video = videos;
@@ -171,7 +173,7 @@ router.get('/course/detail/:id', (req, res) => {
               '_id': {
                 $in: arrUserComment
               }
-            }).lean().exec(function (err, UsersComment) {
+            }).lean().exec(async function (err, UsersComment) {
               for (let i = 0; i < doc.review.length; i++) {
                 for (let j = 0; j < UsersComment.length; j++) {
                   if (doc.review[i].id_user.equals(UsersComment[j]._id)) {
@@ -180,14 +182,13 @@ router.get('/course/detail/:id', (req, res) => {
                   }
                 }
               }
-              User.find({
-                '_id': doc.idTeacher
-              }).lean().exec(function (err, teacher) {
-                doc.teacher = teacher;
-                const response = Response.successResponse(doc);
-                return res.status(200).json(response);
-              });
-              
+              const teacher = await UserModel.findUserById(doc.idTeacher);
+              delete teacher.password;
+              delete teacher.username;
+              delete teacher.phone;
+              doc.teacher = teacher;
+              const response = Response.successResponse(doc);
+              return res.status(200).json(response);
             });
           });
         }
