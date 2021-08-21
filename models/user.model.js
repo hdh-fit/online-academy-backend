@@ -91,7 +91,7 @@ module.exports = {
         if (user) {
             const watchlist = await Course.find({
                 '_id': {$in: user.watchlist}},
-                '_id name rating image_link dateCourse isFinish view price category idTeacher review')
+                '_id name rating image_link dateCourse isFinish view price newPrice category idTeacher review')
                 .lean()
                 .exec();
 
@@ -171,7 +171,7 @@ module.exports = {
         if (user) {
             const listCourse = await Course.find({
                 '_id': {$in: user.listCourse}},
-                '_id name rating image_link dateCourse isFinish view price category idTeacher review')
+                '_id name rating image_link dateCourse isFinish view price newPrice category idTeacher review')
                 .lean()
                 .exec();
 

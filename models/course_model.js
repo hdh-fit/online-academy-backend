@@ -11,6 +11,7 @@ const courseSchema = new mongoose.Schema({
 	isFinish: Boolean,
 	view: Number,
 	price: Number,
+	newPrice : { type: Number, default: -1 },
 	category: String,
 	review: [{ comment: String, id_user: mongoose.ObjectId, rate: Number, date: { type: Date, default: Date.now } }],
 	feedBack: [{ type: String }],
@@ -38,6 +39,7 @@ const blackCourseSchema = new mongoose.Schema({
   isFinish: Boolean,
   view: Number,
   price: Number,
+  newPrice : { type: Number, default: -1 },
   category: String,
   review: [{ comment: String, id_user: mongoose.ObjectId, rate: Number, date: { type: Date, default: Date.now } }],
   feedBack: [{ type: String }]

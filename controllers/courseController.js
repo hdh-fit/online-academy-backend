@@ -100,6 +100,7 @@ const searchCourseEndPoint = async (req, res) => {
 			'isFinish':1,
 			'view':1,
 			'price':1,
+			'newPrice': 1,
 			'category':1,
 			'idTeacher':1,
 			'review': 1,

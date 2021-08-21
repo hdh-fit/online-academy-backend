@@ -85,7 +85,7 @@ router.get('/course/top-10-view', (req, res) => {
 
 router.get('/course/top-5-join', async (req,res)=>{
   const course = await Course.find({},
-    '_id name rating image_link dateCourse isFinish view price category idTeacher joinWeek')
+    '_id name rating image_link dateCourse isFinish view price newPrice category idTeacher joinWeek')
     .sort({ joinWeek: -1 }).limit(5).lean().exec();
 
   if (course) {
@@ -836,7 +836,7 @@ router.get('/getCourseByCategoryName/:name/:pageNumber/:limitPerPage', (req, res
   let page = Math.max(1, req.params.pageNumber)
 
   Course.find({ category: req.params.name },
-    '_id name rating image_link dateCourse isFinish view price category idTeacher review')
+    '_id name rating image_link dateCourse isFinish view price newPrice category idTeacher review')
     .lean()
     .exec(function (error, docs) {
       if (error) {
@@ -921,6 +921,7 @@ router.get('/banCourse/:idCourse',(req,res)=>{
       }
     });
 })
+
 router.post('/updateCourse/:idCourse',(req,res)=>{
   Course.findOne({_id:req.params.idCourse})
     .exec(function (error, doc) {
@@ -935,6 +936,7 @@ router.post('/updateCourse/:idCourse',(req,res)=>{
       }
     });
 });
+
 router.get('/isFinsh/:idCourse',(req,res)=>{
   Course.findOne({_id:req.params.idCourse})
     .lean()
@@ -948,4 +950,40 @@ router.get('/isFinsh/:idCourse',(req,res)=>{
       }
     });
 });
+
+router.get('/sale', async (req, res) => {
+  const course = await Course.find({},
+    '_id name rating image_link dateCourse isFinish view price newPrice category idTeacher joinWeek')
+    .sort({ newPrice: 1 }).lean().exec();
+  if (course) {
+    let data = []; 
+    for (let i = 0; i < course.length; i++) {
+      if (course[i].newPrice === -1) continue; 
+      data.push(course[i]);
+    }
+
+    let teacherId = [];
+    for (let i = 0; i < data.length; i++) {
+      teacherId.push(data[i].idTeacher);
+    }
+
+    const teachersName = await User.find({'_id': {$in: teacherId}}).select('fullname').exec();
+  
+    for (let i = 0; i < data.length; i++) {
+      for (let j = 0; j < teachersName.length; j++) {
+        if (data[i].idTeacher == teachersName[j]._id) {
+          data[i].nameTeacher = teachersName[j].fullname;
+          break;
+        }
+      }
+    }
+    const response = Response.successResponse(data);
+    res.status(200).json(response);
+  }
+  else {
+    const response = Response.falseResponse('Some thing wrong');
+    return res.status(304).json(response);
+  }
+}) 
+
 module.exports = router;
