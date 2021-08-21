@@ -94,7 +94,7 @@ router.get('/course/top-5-join', async (req,res)=>{
             teacherId.push(course[i].idTeacher);
         }
         const teachersName = await User.find({'_id': {$in: teacherId}}).select('fullname').exec();
-	
+
         for (let i = 0; i < course.length; i++) {
             for (let j = 0; j < teachersName.length; j++) {
                 if (course[i].idTeacher == teachersName[j]._id) {
@@ -105,7 +105,7 @@ router.get('/course/top-5-join', async (req,res)=>{
         }
 		const response = Response.successResponse(course);
 		res.status(200).json(response);
-	} 
+	}
 	else {
 		const response = Response.falseResponse('Some thing wrong');
     return res.status(304).json(response);
@@ -477,7 +477,7 @@ router.post('/disableuser', authMiddewares, async (req, res) => {
   const user = await UserModel.findUserById(req.user.id);
 
   if (user) {
-    const disableUser = await UserModel.disableUser(req.body.id); 
+    const disableUser = await UserModel.disableUser(req.body.id);
     if (disableUser) {
       const response = Response.successResponse({ msg: "Disable success" });
       return res.status(200).json(response);
@@ -500,7 +500,7 @@ router.post('/enableuser', authMiddewares, async (req, res) => {
   const user = await UserModel.findUserById(req.user.id);
 
   if (user) {
-    const enableUser = await UserModel.enableUser(req.body.id); 
+    const enableUser = await UserModel.enableUser(req.body.id);
     if (enableUser) {
       const response = Response.successResponse({ msg: "Enable success" });
       return res.status(200).json(response);
@@ -835,7 +835,7 @@ router.get('/getCourseByCategoryName/:name/:pageNumber/:limitPerPage', (req, res
   let perPage = parseInt(req.params.limitPerPage)
   let page = Math.max(1, req.params.pageNumber)
 
-  Course.find({ category: req.params.name }, 
+  Course.find({ category: req.params.name },
     '_id name rating image_link dateCourse isFinish view price category idTeacher review')
     .lean()
     .exec(function (error, docs) {
@@ -923,7 +923,6 @@ router.get('/banCourse/:idCourse',(req,res)=>{
 })
 router.post('/updateCourse/:idCourse',(req,res)=>{
   Course.findOne({_id:req.params.idCourse})
-    .lean()
     .exec(function (error, doc) {
       if(doc){
       for(const p in req.body){
