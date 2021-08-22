@@ -170,6 +170,8 @@ const handleMessage = (sender_psid, received_message) => {
 								text: "Xin chọn lĩnh vực:",
 								quick_replies
 							};
+
+							callSendAPI(sender_psid, response);
 						});
 				} else {
 					getCourseByCategoryName(received_message.quick_reply.payload)
