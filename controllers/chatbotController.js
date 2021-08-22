@@ -130,7 +130,7 @@ const handleMessage = (sender_psid, received_message) => {
 							{
 								type: "postback",
 								payload: `idCourse_${course._id}`,
-								title: `Xem chi tiết khoá học ${course.name}`
+								title: "Xem chi tiết khoá học"
 							}
 						]
 					}
@@ -190,7 +190,7 @@ const handleMessage = (sender_psid, received_message) => {
 										{
 											type: "postback",
 											payload: `idCourse_${course._id}`,
-											title: `Xem chi tiết khoá học ${course.name}`
+											title: "Xem chi tiết khoá học"
 										}
 									]
 								}
