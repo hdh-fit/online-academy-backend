@@ -154,44 +154,63 @@ const handleMessage = (sender_psid, received_message) => {
 
 		} else {
 			if (received_message.quick_reply) {
-				getCourseByCategoryName(received_message.quick_reply.payload)
-					.then(courses => {
-						const elements = courses.map(course => (
-							{
-								title: course.name,
-								image_url: course.image_link,
-								subtitle: course.short_described,
-								default_action: {
-									type: "web_url",
-									url: `https://fitstudy.netlify.app/course/${course._id}`,
-									webview_height_ratio: "tall"
-								},
-								buttons: [
-									{
+				const replyArr = received_message.quick_reply.split('_');
+				if (replyArr.length === 2) {
+					getCategories()
+						.then(res => {
+							const quick_replies = res.filter(item => item.category === replyArr[1]).map(category => (
+								{
+									"content_type": "text",
+									"title": category.label,
+									"payload": category.name,
+								}
+							));
+
+							response = {
+								text: "Xin chọn lĩnh vực:",
+								quick_replies
+							};
+						});
+				} else {
+					getCourseByCategoryName(received_message.quick_reply.payload)
+						.then(courses => {
+							const elements = courses.map(course => (
+								{
+									title: course.name,
+									image_url: course.image_link,
+									subtitle: course.short_described,
+									default_action: {
 										type: "web_url",
 										url: `https://fitstudy.netlify.app/course/${course._id}`,
-										title: "Xem chi tiết khoá học"
-									}
-								]
-							}
-						));
-
-						if (elements.length === 0) {
-							response = { text: 'Không tìm thấy kết quả phù hợp.' };
-						} else {
-							response = {
-								"attachment": {
-									"type": "template",
-									"payload": {
-										"template_type": "generic",
-										"elements": elements
-									}
+										webview_height_ratio: "tall"
+									},
+									buttons: [
+										{
+											type: "web_url",
+											url: `https://fitstudy.netlify.app/course/${course._id}`,
+											title: "Xem chi tiết khoá học"
+										}
+									]
 								}
-							};
-						}
-						callSendAPI(sender_psid, response);
-					})
-					.catch(err => console.log(err));
+							));
+
+							if (elements.length === 0) {
+								response = { text: 'Không tìm thấy kết quả phù hợp.' };
+							} else {
+								response = {
+									"attachment": {
+										"type": "template",
+										"payload": {
+											"template_type": "generic",
+											"elements": elements
+										}
+									}
+								};
+							}
+							callSendAPI(sender_psid, response);
+						})
+						.catch(err => console.log(err));
+				}
 			} else {
 				switch (messText) {
 					case 'start':
@@ -247,9 +266,9 @@ const handlePostback = async (sender_psid, received_postback) => {
 		if (courseIdArr?.length === 2) {
 			const res = await getCourseById(courseIdArr[1]);
 			if (res) {
-				const { name, rating, teacher, short_described, view, price, category } = res?.data;
+				const { name, rating, teacher, short_described, view, price, category, newPrice } = res?.data;
 				const text =
-					`Course Name: ${name}\nView: ${view}\nPrive: ${price}\nRating: ${rating}\nInstructors: ${teacher.fullname}\nShort description: ${short_described}\nCategory: ${category}`;
+					`Course Name: ${name}\nView: ${view}\nPrive: ${newPrice !== -1 ? newPrice : price}\nRating: ${rating}\nStudents:${listStudent.length}\nInstructors: ${teacher.fullname}\nShort description: ${short_described}\nCategory: ${category}`;
 				response = { text };
 			} else {
 				response = { text: 'Some thing wrong.' };
@@ -262,14 +281,32 @@ const handlePostback = async (sender_psid, received_postback) => {
 				case 'search':
 					response = searchOptions;
 					break;
-				case 'category':
-					const categories = await getCategories();
+				//case 'category':
+				//	const categories = await getCategories();
 
-					const quick_replies = categories.map(category => (
+				//	const quick_replies = categories.map(category => (
+				//		{
+				//			"content_type": "text",
+				//			"title": category.label,
+				//			"payload": category.name,
+				//		}
+				//	));
+
+				//	response = {
+				//		text: "Xin chọn danh mục:",
+				//		quick_replies
+				//	};
+
+				//	break;
+				case 'main-category':
+					const categories = await getCategories();
+					const mainCategories = categories.map(category => category.category);
+
+					const quick_replies = mainCategories.filter((item, index) => mainCategories.indexOf(item) === index).map(category => (
 						{
 							"content_type": "text",
-							"title": category.label,
-							"payload": category.name,
+							"title": category,
+							"payload": `main_${category}`,
 						}
 					));
 

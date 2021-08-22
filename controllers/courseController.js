@@ -5,6 +5,7 @@ const { Course } = require("../models/course_model");
 const UserModel = require("../models/user.model");
 
 const Response = require('../jsonResponse/jsonResponse');
+const { User } = require("../models/user.model");
 mongoose.connect(MONGODB_URL, { useNewUrlParser: true, useUnifiedTopology: true });
 
 const searchCourse = (keyword) => {
