@@ -268,7 +268,7 @@ const handlePostback = async (sender_psid, received_postback) => {
 		if (courseIdArr?.length === 2) {
 			const res = await getCourseById(courseIdArr[1]);
 			if (res) {
-				const { name, rating, teacher, short_described, view, price, category, newPrice } = res?.data;
+				const { name, rating, teacher, short_described, view, price, category, newPrice, listStudent } = res?.data;
 				const text =
 					`Course Name: ${name}\nView: ${view}\nPrive: ${newPrice !== -1 ? newPrice : price}\nRating: ${rating}\nStudents:${listStudent.length}\nInstructors: ${teacher.fullname}\nShort description: ${short_described}\nCategory: ${category}`;
 				response = { text };
