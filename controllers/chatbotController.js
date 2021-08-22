@@ -7,7 +7,7 @@ const request = require('request');
 const mongoose = require('mongoose');
 const { Course } = require("../models/course_model");
 const { Category } = require("../models/category.model");
-const { getCourseByCategoryName, searchCourse } = require("./courseController");
+const { getCourseByCategoryName, searchCourse, getCourseById } = require("./courseController");
 mongoose.connect(MONGODB_URL, { useNewUrlParser: true, useUnifiedTopology: true });
 
 const optionsResponse = {
@@ -128,8 +128,8 @@ const handleMessage = (sender_psid, received_message) => {
 						},
 						buttons: [
 							{
-								type: "web_url",
-								url: `https://fitstudy.netlify.app/course/${course._id}`,
+								type: "postback",
+								payload: `idCourse_${course._id}`,
 								title: "Xem chi tiết khoá học"
 							}
 						]
@@ -242,6 +242,27 @@ const handlePostback = async (sender_psid, received_postback) => {
 		let response;
 		let payload = received_postback.payload;
 
+		const courseIdArr = payload.split('_');
+
+		if (courseIdArr?.length === 2) {
+			const res = await getCourseById(courseIdArr[1]);
+			if (res) {
+				const { name, rating, teacher, short_described, view, price, category } = res?.data;
+				const text =
+					`Course Name: ${name}
+					View: ${view}
+					Prive: ${price}
+					Rating: ${rating}
+					Instructors: ${teacher.fullname}
+					Short description: ${short_described}
+					Category: ${category}`;
+				response = { text };
+			} else {
+				response = { text: 'Some thing wrong.' };
+			}
+			return;
+		}
+
 		switch (payload) {
 			case 'start':
 				response = optionsResponse;
@@ -326,18 +347,9 @@ const callSendAPI = (sender_psid, response) => {
 };
 
 const testEndpoint = (req, res) => {
-	const keyword = req.params.text;
+	const id = req.params.text;
+	getCourseById(id).then(res => console.log(res)).catch((er) => console.log(er));
 
-	searchCourse(keyword)
-		.then(categories => {
-			const response = Response.successResponse(categories);
-			res.status(200).json(response);
-		})
-		.catch((err) => {
-			console.log(err);
-			const response = Response.falseResponse('Some thing wrong');
-			res.status(304).json(response);
-		});
 };
 
 module.exports = {
