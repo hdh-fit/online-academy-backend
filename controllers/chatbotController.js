@@ -34,7 +34,7 @@ const optionsResponse = {
 						{
 							"type": "postback",
 							"title": "Duyệt theo danh mục",
-							"payload": "category"
+							"payload": "main-category"
 						},
 					]
 				}
