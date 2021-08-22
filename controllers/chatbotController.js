@@ -154,7 +154,7 @@ const handleMessage = (sender_psid, received_message) => {
 
 		} else {
 			if (received_message.quick_reply) {
-				const replyArr = received_message.quick_reply.split('_');
+				const replyArr = received_message.quick_reply.payload.split('_');
 				if (replyArr.length === 2) {
 					getCategories()
 						.then(res => {
