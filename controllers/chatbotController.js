@@ -188,8 +188,8 @@ const handleMessage = (sender_psid, received_message) => {
 									},
 									buttons: [
 										{
-											type: "web_url",
-											url: `https://fitstudy.netlify.app/course/${course._id}`,
+											type: "postback",
+											payload: `idCourse_${course._id}`,
 											title: "Xem chi tiết khoá học"
 										}
 									]
