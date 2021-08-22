@@ -939,7 +939,6 @@ router.post('/updateCourse/:idCourse',(req,res)=>{
 
 router.get('/isFinsh/:idCourse',(req,res)=>{
   Course.findOne({_id:req.params.idCourse})
-    .lean()
     .exec(function (error, doc) {
       if(doc){
         doc.isFinish=true;
@@ -956,9 +955,9 @@ router.get('/sale', async (req, res) => {
     '_id name rating image_link dateCourse isFinish view price newPrice category idTeacher joinWeek')
     .sort({ newPrice: 1 }).lean().exec();
   if (course) {
-    let data = []; 
+    let data = [];
     for (let i = 0; i < course.length; i++) {
-      if (course[i].newPrice === -1) continue; 
+      if (course[i].newPrice === -1) continue;
       data.push(course[i]);
     }
 
@@ -968,7 +967,7 @@ router.get('/sale', async (req, res) => {
     }
 
     const teachersName = await User.find({'_id': {$in: teacherId}}).select('fullname').exec();
-  
+
     for (let i = 0; i < data.length; i++) {
       for (let j = 0; j < teachersName.length; j++) {
         if (data[i].idTeacher == teachersName[j]._id) {
@@ -984,6 +983,6 @@ router.get('/sale', async (req, res) => {
     const response = Response.falseResponse('Some thing wrong');
     return res.status(304).json(response);
   }
-}) 
+})
 
 module.exports = router;
