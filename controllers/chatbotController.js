@@ -260,36 +260,35 @@ const handlePostback = async (sender_psid, received_postback) => {
 			} else {
 				response = { text: 'Some thing wrong.' };
 			}
-			return;
-		}
+		} else {
+			switch (payload) {
+				case 'start':
+					response = optionsResponse;
+					break;
+				case 'search':
+					response = searchOptions;
+					break;
+				case 'category':
+					const categories = await getCategories();
 
-		switch (payload) {
-			case 'start':
-				response = optionsResponse;
-				break;
-			case 'search':
-				response = searchOptions;
-				break;
-			case 'category':
-				const categories = await getCategories();
+					const quick_replies = categories.map(category => (
+						{
+							"content_type": "text",
+							"title": category.label,
+							"payload": category.name,
+						}
+					));
 
-				const quick_replies = categories.map(category => (
-					{
-						"content_type": "text",
-						"title": category.label,
-						"payload": category.name,
-					}
-				));
+					response = {
+						text: "Xin chọn danh mục:",
+						quick_replies
+					};
 
-				response = {
-					text: "Xin chọn danh mục:",
-					quick_replies
-				};
-
-				break;
-			default:
-				response = { text: 'Some thing wrong.' };
-				break;
+					break;
+				default:
+					response = { text: 'Some thing wrong.' };
+					break;
+			}
 		}
 
 		callSendAPI(sender_psid, response);
