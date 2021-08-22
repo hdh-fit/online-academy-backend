@@ -249,13 +249,7 @@ const handlePostback = async (sender_psid, received_postback) => {
 			if (res) {
 				const { name, rating, teacher, short_described, view, price, category } = res?.data;
 				const text =
-					`Course Name: ${name}
-					View: ${view}
-					Prive: ${price}
-					Rating: ${rating}
-					Instructors: ${teacher.fullname}
-					Short description: ${short_described}
-					Category: ${category}`;
+					`Course Name: ${name}\nView: ${view}\nPrive: ${price}\nRating: ${rating}\nInstructors: ${teacher.fullname}\nShort description: ${short_described}\nCategory: ${category}`;
 				response = { text };
 			} else {
 				response = { text: 'Some thing wrong.' };
