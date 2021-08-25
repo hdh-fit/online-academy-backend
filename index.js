@@ -31,9 +31,9 @@ app.use(function (err, req, res, next) {
 
 const PORT = process.env.PORT || 3030;
 app.listen(PORT, function () {
-  setInterval(()=>{
-    process.exit(0)
-  },25*60*1000)
+//   setInterval(()=>{
+//     process.exit(0)
+//   },25*60*1000)
 });
 
 const { Course } = require("./models/course_model");
